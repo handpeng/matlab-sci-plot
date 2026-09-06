@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matlab-sci-plot/review-record/1.0",
+  "title": "Review Record",
+  "type": "object",
+  "required": ["record_type", "record_version", "verdict", "scientific_correctness", "dimensions"],
+  "properties": {
+    "record_type": {"const": "figure_review"},
+    "record_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
+    "verdict": {"enum": ["accept", "repair", "reject"]},
+    "scientific_correctness": {"enum": ["PASS", "FAIL"]},
+    "dimensions": {"type": "object", "required": ["claim_support", "statistical_transparency", "perceptual_clarity", "layout_hierarchy", "accessibility", "style_consistency", "final_size_legibility", "reproducibility"]},
+    "repair_ids": {"type": "array", "items": {"type": "string"}},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": false
+}

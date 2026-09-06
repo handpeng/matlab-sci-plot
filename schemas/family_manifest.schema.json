@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matlab-sci-plot/family-manifest/1.0",
+  "title": "Figure Family Manifest",
+  "type": "object",
+  "required": ["manifest_type", "manifest_version", "id", "communication_tasks", "data_roles_required", "renderer_entrypoint", "status"],
+  "properties": {
+    "manifest_type": {"const": "figure_family"},
+    "manifest_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]+$"},
+    "version": {"type": "string"},
+    "communication_tasks": {"type": "array", "items": {"type": "string"}},
+    "data_roles_required": {"type": "array", "items": {"type": "string"}},
+    "data_roles_optional": {"type": "array", "items": {"type": "string"}},
+    "sample_constraints": {"type": "object"},
+    "supports_grouping": {"type": "boolean"},
+    "supports_uncertainty": {"type": "boolean"},
+    "supports_small_multiples": {"type": "boolean"},
+    "supports_shared_color_scale": {"type": "boolean"},
+    "recommended_layout_primitives": {"type": "array", "items": {"type": "string"}},
+    "incompatible_encodings": {"type": "array", "items": {"type": "string"}},
+    "renderer_backend": {"type": "string"},
+    "renderer_entrypoint": {"type": "string"},
+    "capabilities": {"type": "array", "items": {"type": "string"}},
+    "status": {"enum": ["active", "extension", "deprecated"]}
+  },
+  "additionalProperties": false
+}

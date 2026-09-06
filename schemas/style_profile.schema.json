@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matlab-sci-plot/style-profile/1.0",
+  "title": "Style/Profile Manifest",
+  "type": "object",
+  "required": ["manifest_type", "manifest_version", "profile_id", "profile_version", "status", "checked_at", "source_urls", "scope"],
+  "properties": {
+    "manifest_type": {"const": "style_profile"},
+    "manifest_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
+    "profile_id": {"type": "string"},
+    "profile_version": {"type": "string"},
+    "checked_at": {"type": "string"},
+    "source_urls": {"type": "array", "items": {"type": "string"}},
+    "scope": {"type": "string"},
+    "status": {"enum": ["active_snapshot", "stale_review_required", "deprecated"]},
+    "supersedes": {"type": ["string", "null"]},
+    "notes": {"type": "string"},
+    "overrides": {"type": "object"}
+  },
+  "additionalProperties": false
+}
