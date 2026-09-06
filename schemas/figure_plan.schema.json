@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matlab-sci-plot/figure-plan/1.0",
+  "title": "Figure Plan",
+  "type": "object",
+  "required": ["contract_type", "contract_version", "family_id", "layout_id", "backend_id", "style_id"],
+  "properties": {
+    "contract_type": {"const": "figure_plan"},
+    "contract_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
+    "family_id": {"type": "string"},
+    "layout_id": {"type": "string"},
+    "backend_id": {"type": "string"},
+    "style_id": {"type": "string"},
+    "candidate_rank": {"type": "integer", "minimum": 1},
+    "compatibility": {"type": "object"},
+    "panels": {"type": "array"},
+    "scale_policy": {"type": "object"},
+    "alternatives": {"type": "array"}
+  },
+  "additionalProperties": false
+}

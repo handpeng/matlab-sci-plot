@@ -1,0 +1,31 @@
+import unittest
+
+from src.matlab_sci_plot.contracts import ContractError, validate_contract
+
+
+class ContractTests(unittest.TestCase):
+    def test_figure_contract_and_plan_envelopes(self):
+        contract = validate_contract({
+            "contract_type": "figure_contract", "contract_version": "1.0",
+            "purpose": "manuscript", "claim": {"primary": "prediction agrees"},
+            "data_bindings": {"table": "external.csv"}, "provenance": {"source_id": "fixture"}
+        })
+        self.assertEqual(contract["contract_version"], "1.0")
+        plan = validate_contract({
+            "contract_type": "figure_plan", "contract_version": "1.0",
+            "family_id": "prediction.parity", "layout_id": "single",
+            "backend_id": "matlab", "style_id": "publication"
+        })
+        self.assertEqual(plan["family_id"], "prediction.parity")
+
+    def test_unsupported_major_fails_closed(self):
+        with self.assertRaises(ContractError):
+            validate_contract({"contract_type": "figure_plan", "contract_version": "2.0", "family_id": "x", "layout_id": "single", "backend_id": "matlab", "style_id": "x"})
+
+    def test_scientific_failure_cannot_be_accepted(self):
+        with self.assertRaises(ContractError):
+            validate_contract({"record_type": "figure_review", "record_version": "1.0", "verdict": "accept", "scientific_correctness": "FAIL", "dimensions": {}})
+
+
+if __name__ == "__main__":
+    unittest.main()

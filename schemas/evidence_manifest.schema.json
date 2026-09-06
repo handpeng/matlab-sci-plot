@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matlab-sci-plot/evidence-manifest/1.0",
+  "title": "Evidence/Provenance Manifest",
+  "type": "object",
+  "required": ["manifest_type", "manifest_version", "skill_version", "contract_versions", "outputs"],
+  "properties": {
+    "manifest_type": {"const": "figure_evidence"},
+    "manifest_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
+    "skill_version": {"type": "string"},
+    "contract_versions": {"type": "object"},
+    "source_data": {"type": "object"},
+    "matlab_version": {"type": ["string", "null"]},
+    "style_profile": {"type": "string"},
+    "final_dimensions": {"type": "object"},
+    "palette": {"type": "object"},
+    "transformations": {"type": "array"},
+    "exclusions": {"type": "array"},
+    "uncertainty": {"type": ["object", "null"]},
+    "selected_candidate": {"type": ["string", "null"]},
+    "review_result": {"type": "object"},
+    "outputs": {"type": "array", "items": {"type": "object", "required": ["path"]}}
+  },
+  "additionalProperties": false
+}
