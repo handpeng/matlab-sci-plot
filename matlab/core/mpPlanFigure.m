@@ -23,7 +23,9 @@ scores = [];
 for i = 1:numel(registry)
     tasks = cellstr(string(registry(i).communication_tasks));
     requiredRoles = cellstr(string(registry(i).data_roles_required));
-    compatible = any(strcmp(tasks, task)) && strcmp(registry(i).renderer_backend, backend) && all(ismember(requiredRoles, roles));
+    hasNativeRenderer = ~strcmp(registry(i).matlab_renderer, 'mpRenderUnsupportedFamily');
+    compatible = any(strcmp(tasks, task)) && strcmp(registry(i).renderer_backend, backend) && ...
+        hasNativeRenderer && all(ismember(requiredRoles, roles));
     if compatible, scores(end+1) = i; end %#ok<AGROW>
 end
 if isempty(scores), error('matlab_sci_plot:NoCompatibleFamily', 'No family is compatible with task and roles.'); end

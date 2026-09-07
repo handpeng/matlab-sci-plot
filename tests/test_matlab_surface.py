@@ -32,6 +32,12 @@ class MatlabSurfaceTests(unittest.TestCase):
         smoke = (root / "matlab/tests/run_matlab_smoke.m").read_text(encoding="utf-8")
         self.assertNotIn("switch plan.family_id", smoke)
 
+    def test_planner_excludes_unimplemented_matlab_entrypoints(self):
+        root = Path(__file__).parents[1]
+        planner = (root / "matlab/core/mpPlanFigure.m").read_text(encoding="utf-8")
+        self.assertIn("hasNativeRenderer", planner)
+        self.assertIn("mpRenderUnsupportedFamily", planner)
+
 
 if __name__ == "__main__":
     unittest.main()
