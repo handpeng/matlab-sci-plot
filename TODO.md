@@ -3,6 +3,7 @@
 Status: **Stage 1 governance plan — implementation not yet authorized by this file alone**  
 Planning baseline: `6eeafa47f9b0ca73234c875b8398c3f5ef5ba7aa` (`v1.1.1`)  
 Qualified runtime basis: `v1.1.0` Stage 3 on MATLAB R2023b (`23.2.0.2365128`)  
+Historical V1 governance: the completed V1 architecture plan remains available as `TODO.md` at baseline commit `6eeafa47f9b0ca73234c875b8398c3f5ef5ba7aa` and in Git history.  
 Scope: Unicode/CJK text contracts, typography resolution, MATLAB text application, export evidence, and qualification coverage.  
 Out of scope: scientific-model changes, family redesign, data transformations, publisher-compliance claims, or replacement of the qualified registry/render/audit architecture.
 
@@ -89,7 +90,7 @@ The policy should prefer broadly available CJK fonts without making any one comm
 - `Source Han Sans SC`;
 - other reviewed equivalents.
 
-This is an ordered candidate list, not a guarantee that every listed font is installed or renders correctly.
+This is an ordered candidate list, not a guarantee that every listed font is installed or renders correctly. Adding a new governed CJK candidate is a policy/metadata change that must be reviewable; an arbitrary `font_name` string is not itself evidence of CJK capability.
 
 ## 4. Governed renderable-text surface
 
@@ -143,11 +144,12 @@ For English-only content:
 
 For CJK-containing content:
 
-1. honor an explicitly requested font only when it is present in the runtime font inventory and is part of the governed CJK-capable policy or has been explicitly approved by the caller contract/style path;
-2. otherwise select the first available font from the ordered CJK fallback list;
-3. if none is available, fail closed before final governed export.
+1. use a requested/profile font only when its exact name is both present in the runtime font inventory **and** present in the governed CJK-capable candidate policy;
+2. otherwise select the first runtime-available font from the governed ordered CJK candidate list;
+3. if none is available, fail closed before final governed export;
+4. future support for a custom CJK font must extend the governed policy/metadata surface explicitly rather than treating an arbitrary installed `font_name` as CJK-qualified.
 
-Do not silently rewrite the user's scientific text.
+Do not silently rewrite the user's scientific text. Ordinary `font_name` override behavior remains available to the existing English-only path and does not, by itself, create a CJK qualification claim.
 
 ### 6.3 Single resolved figure font for the first qualified CJK path
 
@@ -235,7 +237,7 @@ Add deterministic tests for:
 - Python validator and JSON Schema agreement for those fields;
 - CJK detection positive and negative fixtures;
 - style resolution preserving English defaults;
-- safe explicit font override behavior;
+- ordinary English font override behavior plus governed CJK-candidate selection rules;
 - no scientific constraint mutation from typography resolution;
 - documentation/source consistency.
 
@@ -271,9 +273,9 @@ Independent Stage 3 must qualify the exact merged candidate with real MATLAB and
 3. Chinese legend/category labels — PNG + vector PDF.
 4. mixed Chinese + Latin units/symbols (`°C`, `μm`, `W/(m·K)`) — PNG + vector PDF.
 5. multi-panel figure with Chinese panel-visible text.
-6. explicit approved CJK font override.
-7. automatic fallback to an installed CJK font.
-8. no CJK font available negative control — fail closed.
+6. explicitly selected governed CJK candidate font.
+7. automatic fallback to an installed governed CJK font.
+8. no governed CJK font available negative control — fail closed.
 9. evidence manifest matches the actually resolved font and exact candidate SHA.
 
 Stage 3 must inspect both raster appearance and vector-PDF text/glyph correctness. A file-existing check alone is insufficient.
