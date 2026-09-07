@@ -1,0 +1,1 @@
+{"contract_type":"figure_contract","contract_version":"1.0","purpose":"manuscript","claim":{"primary":"models are compared on a common evaluation sample"},"data_bindings":{"metrics":"upstream/metrics.json"},"roles":{"metrics":"numeric","model":"category"},"communication_task":"model_comparison","provenance":{"source_id":"synthetic-model-fixture"}}
