@@ -1,0 +1,1 @@
+{"contract_type":"figure_contract","contract_version":"1.0","purpose":"supplement","claim":{"primary":"error distributions are transparent"},"data_bindings":{"error":"external/error.csv"},"roles":{"error":"numeric","regime":"group"},"communication_task":"distribution","provenance":{"source_id":"synthetic-distribution-fixture"}}

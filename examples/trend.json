@@ -1,0 +1,1 @@
+{"contract_type":"figure_contract","contract_version":"1.0","purpose":"manuscript","claim":{"primary":"property follows declared process order"},"data_bindings":{"time":"external/time.csv","value":"external/value.csv"},"roles":{"time":"ordered","value":"numeric"},"communication_task":"trend","provenance":{"source_id":"synthetic-trend-fixture"}}
