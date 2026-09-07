@@ -20,6 +20,7 @@
     "recommended_layout_primitives": {"type": "array", "items": {"type": "string"}},
     "incompatible_encodings": {"type": "array", "items": {"type": "string"}},
     "renderer_backend": {"type": "string"},
+    "matlab_renderer": {"type": "string"},
     "renderer_entrypoint": {"type": "string"},
     "capabilities": {"type": "array", "items": {"type": "string"}},
     "status": {"enum": ["active", "extension", "deprecated"]}
