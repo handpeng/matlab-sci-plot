@@ -7,6 +7,13 @@ arguments
     options.Resolution (1,1) double = 300
 end
 if ~isgraphics(fig, 'figure'), error('matlab_sci_plot:InvalidFigure','Expected a figure handle.'); end
-exportgraphics(fig, path, 'Resolution', options.Resolution);
+format = lower(char(options.Format));
+if strcmp(format, 'png')
+    exportgraphics(fig, path, 'Resolution', options.Resolution);
+elseif any(strcmp(format, {'pdf','svg'}))
+    exportgraphics(fig, path, 'ContentType', 'vector');
+else
+    error('matlab_sci_plot:UnsupportedExport', 'Unsupported export format: %s', format);
+end
 output = struct('path', char(path), 'format', char(options.Format), 'backend', 'matlab');
 end

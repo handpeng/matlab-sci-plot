@@ -1,0 +1,53 @@
+function report = run_matlab_qualification(rootDir, outputDir)
+% Native MATLAB scientific gates and composite-layout regression tests.
+if nargin < 1, rootDir = fileparts(fileparts(fileparts(mfilename('fullpath')))); end
+if nargin < 2, outputDir = fullfile(tempdir, 'matlab_sci_plot_qualification'); end
+addpath(genpath(rootDir));
+if ~exist(outputDir,'dir'), mkdir(outputDir); end
+
+metrics = mpDescriptiveMetrics([0;1;2;3],[3;2;1;0]);
+assert(metrics.r2 < 0, 'Negative R2 must be preserved.');
+base = struct('contract_type','figure_contract','contract_version','1.0', ...
+    'purpose','native qualification','claim',struct('primary','test'), ...
+    'data_bindings',struct('x','synthetic','y','synthetic'), ...
+    'roles',struct('x','numeric','y','numeric'),'communication_task','relationship', ...
+    'provenance',struct('source_id','synthetic-native-qualification'));
+controls = {struct('palette_id','jet'), struct('category_count',16,'max_categories',12), ...
+    struct('scale_policy','independent'), struct('sample_size_required',true), ...
+    struct('required_unit_roles',{{'x','y'}},'units',struct('x','degC')), ...
+    struct('encoding','bar','zero_baseline',true,'axis_limits',struct('y',[0.5 1.5]))};
+for i = 1:numel(controls)
+    candidate = base; fields = fieldnames(controls{i});
+    for j = 1:numel(fields), candidate.(fields{j}) = controls{i}.(fields{j}); end
+    findings = mpAudit(candidate);
+    assert(any(strcmp({findings.severity},'error')), 'Negative control did not fail closed.');
+end
+
+pending = acceptedReview(); pending.dimensions.final_size_legibility = 'REVIEW_REQUIRED';
+assert(~mpReviewAccepted(pending), 'Incomplete visual review must not be accepted.');
+p1 = base; p1.panel_label = '(a)'; p1.labels = struct('x','Temperature','y','Conductivity'); p1.units = struct('x','degC','y','W/(m K)');
+p2 = base; p2.panel_label = '(b)'; p2.communication_task = 'distribution'; p2.roles = struct('value','numeric'); p2.data_bindings = struct('value','synthetic'); p2.labels = struct('value','Error'); p2.units = struct('value','W/(m K)');
+composite = struct('contract_type','figure_contract','contract_version','1.0','purpose','native qualification', ...
+    'claim',struct('primary','panel narrative'),'data_bindings',struct(),'communication_task','composite', ...
+    'provenance',struct('source_id','synthetic-native-qualification','candidate_sha','test-sha'), ...
+    'layout','paired','final_size',struct('width_mm',178,'height_mm',90),'panels',{{p1,p2}});
+plan = mpPlanFigure(composite,rootDir,'matlab');
+style = struct('typography',struct('font_name','Arial','resolved_pt',8), ...
+    'geometry',struct('line_width_pt',0.8,'marker_size_pt',4.5), ...
+    'axes',struct('grid','off'),'final_size',struct('width_mm',178,'height_mm',90));
+data = struct('panels',{{struct('x',(1:10)','y',(1:10)'),struct('values',[-1;0;1],'bin_count',3)}});
+rendered = mpRenderFigure(composite,plan,style,data,outputDir,acceptedReview());
+assert(isfile(rendered.png) && isfile(rendered.pdf));
+assert(strcmp(rendered.manifest.candidate_sha,'test-sha'));
+assert(numel(rendered.manifest.renderer_identity)==2);
+report = struct('status','PASS','negative_r2',metrics.r2,'negative_controls',numel(controls), ...
+    'composite_panels',numel(plan.panels),'matlab_version',version);
+end
+
+function review = acceptedReview()
+dimensions = struct('claim_support','PASS','statistical_transparency','PASS','perceptual_clarity','PASS', ...
+    'layout_hierarchy','PASS','accessibility','PASS','style_consistency','PASS', ...
+    'final_size_legibility','PASS','reproducibility','PASS');
+review = struct('record_type','figure_review','record_version','1.0','verdict','accept', ...
+    'scientific_correctness','PASS','dimensions',dimensions);
+end
