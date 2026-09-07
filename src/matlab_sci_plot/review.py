@@ -39,7 +39,7 @@ def apply_repairs(plan: Mapping[str, Any], repairs: list[Mapping[str, Any]]) -> 
     return result
 
 
-def export_evidence(plan: Mapping[str, Any], review: Mapping[str, Any], output_dir: str | Path, *, source_data: Mapping[str, Any] | None = None, skill_version: str = "1.0.0") -> dict[str, Any]:
+def export_evidence(plan: Mapping[str, Any], review: Mapping[str, Any], output_dir: str | Path, *, source_data: Mapping[str, Any] | None = None, skill_version: str = "1.1.0") -> dict[str, Any]:
     checked_plan = validate_contract(plan, "figure_plan")
     checked_review = validate_contract(review, "figure_review")
     if checked_review["scientific_correctness"] != "PASS" or checked_review["verdict"] != "accept":
