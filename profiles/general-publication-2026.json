@@ -1,0 +1,13 @@
+{
+  "manifest_type": "style_profile",
+  "manifest_version": "1.0",
+  "profile_id": "general-publication-2026",
+  "profile_version": "1.0",
+  "checked_at": "2026-09-07",
+  "source_urls": ["https://www.mathworks.com/help/matlab/ref/exportgraphics.html"],
+  "scope": "General final-size publication defaults; not a compliance certificate",
+  "status": "active_snapshot",
+  "supersedes": null,
+  "notes": "Use live journal guidance before submission.",
+  "overrides": {"typography": {"font_name": "Arial", "base_pt": 8.0}, "geometry": {"line_width_pt": 0.8}}
+}

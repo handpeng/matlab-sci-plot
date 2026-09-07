@@ -1,0 +1,13 @@
+{
+  "manifest_type": "style_profile",
+  "manifest_version": "1.0",
+  "profile_id": "nature-research-2026",
+  "profile_version": "1.0",
+  "checked_at": "2026-09-07",
+  "source_urls": ["https://research-figure-guide.nature.com/"],
+  "scope": "Planning snapshot for Nature Research figures; live verification required",
+  "status": "active_snapshot",
+  "supersedes": null,
+  "notes": "Declarative planning aid only.",
+  "overrides": {"typography": {"font_name": "Arial", "base_pt": 7.5}, "geometry": {"line_width_pt": 0.75}}
+}

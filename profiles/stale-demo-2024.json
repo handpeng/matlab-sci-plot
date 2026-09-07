@@ -1,0 +1,13 @@
+{
+  "manifest_type": "style_profile",
+  "manifest_version": "1.0",
+  "profile_id": "stale-demo-2024",
+  "profile_version": "1.0",
+  "checked_at": "2024-01-01",
+  "source_urls": ["https://example.invalid/profile-snapshot"],
+  "scope": "Test fixture only",
+  "status": "stale_review_required",
+  "supersedes": null,
+  "notes": "Used to verify truthful stale warnings.",
+  "overrides": {"typography": {"base_pt": 9.0}}
+}
