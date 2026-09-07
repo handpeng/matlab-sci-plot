@@ -6,13 +6,13 @@ The V1 architecture is contract-first: scientific intent is bound into a version
 
 ## Current release
 
-- Repository version: **v1.1.0**
+- Repository version: **v1.1.1**
 - Production backend: **MATLAB**
-- Independently qualified runtime: **MATLAB R2023b (`23.2.0.2365128`)**
+- Runtime qualification basis: **v1.1.0 Stage 3 on MATLAB R2023b (`23.2.0.2365128`)**
 - V1 contract/schema major version: **1.0**
-- Qualification status: **released and qualified**
+- v1.1.1 scope: **documentation/usability patch; no runtime or scientific-contract changes**
 
-See [`docs/RELEASE_NOTES_V1.1.0.md`](docs/RELEASE_NOTES_V1.1.0.md) for the release qualification summary.
+See [`docs/RELEASE_NOTES_V1.1.1.md`](docs/RELEASE_NOTES_V1.1.1.md) for the patch-release summary and [`docs/RELEASE_NOTES_V1.1.0.md`](docs/RELEASE_NOTES_V1.1.0.md) for the underlying scientific qualification evidence.
 
 ## What this Skill does
 
@@ -41,7 +41,7 @@ For Skill discovery and orchestration:
 For production rendering:
 
 - MATLAB is required;
-- **R2023b is the exact release-qualified runtime** for v1.1.0;
+- **R2023b is the exact release-qualified runtime basis** inherited from v1.1.0;
 - other MATLAB releases are not claimed as release-qualified unless separately tested.
 
 For repository validation utilities:
@@ -57,7 +57,7 @@ For a reproducible installation, pin the released tag:
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-git clone --branch v1.1.0 --depth 1 \
+git clone --branch v1.1.1 --depth 1 \
   https://github.com/handpeng/matlab-sci-plot.git \
   "$HOME/.agents/skills/matlab-sci-plot"
 ```
@@ -90,7 +90,7 @@ cat "$HOME/.agents/skills/matlab-sci-plot/VERSION"
 Expected version for this release:
 
 ```text
-1.1.0
+1.1.1
 ```
 
 If the Skill does not appear in Codex after installation or an update, restart Codex and verify that the directory is inside a supported Skill discovery root.
@@ -149,10 +149,11 @@ MATLAB-dependent checks report `SKIPPED_UNAVAILABLE` when MATLAB cannot be found
 - Review/evidence contract: [`references/review-contract.md`](references/review-contract.md)
 - Legacy migration: [`references/legacy-migration.md`](references/legacy-migration.md)
 - Metallurgy composition patterns: [`references/metallurgy-patterns.md`](references/metallurgy-patterns.md)
-- V1 release notes: [`docs/RELEASE_NOTES_V1.1.0.md`](docs/RELEASE_NOTES_V1.1.0.md)
+- v1.1.1 release notes: [`docs/RELEASE_NOTES_V1.1.1.md`](docs/RELEASE_NOTES_V1.1.1.md)
+- v1.1.0 qualification evidence: [`docs/RELEASE_NOTES_V1.1.0.md`](docs/RELEASE_NOTES_V1.1.0.md)
 
 ## Versioning
 
 The repository release version is declared in [`VERSION`](VERSION). Contract and manifest schema versions are managed independently from the repository version.
 
-For reproducible scientific work, prefer a qualified release tag such as `v1.1.0` rather than an unpinned moving branch.
+For reproducible scientific work, prefer a released tag such as `v1.1.1` rather than an unpinned moving branch. The v1.1.1 patch does not alter the scientific runtime qualified in v1.1.0.
