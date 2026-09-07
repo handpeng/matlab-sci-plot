@@ -12,7 +12,7 @@ class DocumentationTests(unittest.TestCase):
         root = Path(__file__).parents[1]
         declared = (root / "VERSION").read_text(encoding="utf-8").strip()
         evidence_default = inspect.signature(export_evidence).parameters["skill_version"].default
-        self.assertEqual(declared, "1.1.0")
+        self.assertEqual(declared, "1.1.1")
         self.assertEqual(__version__, declared)
         self.assertEqual(evidence_default, declared)
 

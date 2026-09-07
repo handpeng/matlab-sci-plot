@@ -2,7 +2,7 @@
 
 This guide covers local installation, verification, invocation, upgrade, and removal of `matlab-sci-plot` as a standalone Agent Skill.
 
-For production scientific work, prefer an exact qualified release tag rather than a moving branch.
+For production scientific work, prefer an exact released tag rather than a moving branch.
 
 ## 1. Choose the installation scope
 
@@ -25,7 +25,7 @@ The recommended manual installation for an individual user is:
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-git clone --branch v1.1.0 --depth 1 \
+git clone --branch v1.1.1 --depth 1 \
   https://github.com/handpeng/matlab-sci-plot.git \
   "$HOME/.agents/skills/matlab-sci-plot"
 ```
@@ -60,7 +60,7 @@ git submodule add \
   https://github.com/handpeng/matlab-sci-plot.git \
   .agents/skills/matlab-sci-plot
 
-git -C .agents/skills/matlab-sci-plot checkout v1.1.0
+git -C .agents/skills/matlab-sci-plot checkout v1.1.1
 git add .gitmodules .agents/skills/matlab-sci-plot
 ```
 
@@ -103,23 +103,23 @@ grep -E '^name: matlab-sci-plot$' "$SKILL_ROOT/SKILL.md"
 cat "$SKILL_ROOT/VERSION"
 ```
 
-For v1.1.0 the final command should print:
+For v1.1.1 the final command should print:
 
 ```text
-1.1.0
+1.1.1
 ```
 
-To verify the Git identity:
+To verify the Git identity after the v1.1.1 tag has been published:
 
 ```bash
 git -C "$SKILL_ROOT" describe --tags --exact-match
 git -C "$SKILL_ROOT" rev-parse HEAD
 ```
 
-For the released v1.1.0 installation, `git describe --tags --exact-match` should resolve to:
+For the released v1.1.1 installation, `git describe --tags --exact-match` should resolve to:
 
 ```text
-v1.1.0
+v1.1.1
 ```
 
 ## 6. Verify Codex discovery
@@ -153,7 +153,7 @@ python scripts/integration_check.py
 
 MATLAB-dependent checks may report `SKIPPED_UNAVAILABLE` if MATLAB cannot be found. That result is truthful environment reporting and must not be interpreted as a MATLAB production qualification pass.
 
-The v1.1.0 release was independently qualified with MATLAB R2023b (`23.2.0.2365128`). Other MATLAB releases may work, but this repository does not claim them as release-qualified unless separate evidence exists.
+The scientific runtime qualification basis remains the v1.1.0 Stage 3 result on MATLAB R2023b (`23.2.0.2365128`). The v1.1.1 release is a documentation/usability patch and does not change the MATLAB renderers, scientific contracts, manifests, or qualification gates. Other MATLAB releases may work, but this repository does not claim them as release-qualified unless separate evidence exists.
 
 ## 8. MATLAB production smoke test
 
@@ -169,11 +169,11 @@ Before using a new machine for publication artifacts, confirm at minimum that:
 - scientific negative controls remain fail-closed; and
 - evidence/provenance manifests bind the generated artifacts.
 
-See [`RELEASE_NOTES_V1.1.0.md`](RELEASE_NOTES_V1.1.0.md) for the release qualification evidence.
+See [`RELEASE_NOTES_V1.1.0.md`](RELEASE_NOTES_V1.1.0.md) for the underlying runtime qualification evidence and [`RELEASE_NOTES_V1.1.1.md`](RELEASE_NOTES_V1.1.1.md) for the documentation patch summary.
 
 ## 9. Upgrade
 
-### Upgrade to another qualified release
+### Upgrade to another released version
 
 Fetch tags, inspect the release notes, and check out the desired exact tag:
 
@@ -181,7 +181,7 @@ Fetch tags, inspect the release notes, and check out the desired exact tag:
 SKILL_ROOT="$HOME/.agents/skills/matlab-sci-plot"
 
 git -C "$SKILL_ROOT" fetch --tags origin
-git -C "$SKILL_ROOT" checkout <qualified-release-tag>
+git -C "$SKILL_ROOT" checkout <release-tag>
 ```
 
 Then repeat the installation verification and local validation steps.
@@ -200,7 +200,7 @@ git -C "$SKILL_ROOT" checkout main
 git -C "$SKILL_ROOT" pull --ff-only
 ```
 
-A moving `main` checkout is not equivalent to a qualified release pin.
+A moving `main` checkout is not equivalent to a released tag pin.
 
 ## 10. Disable without deleting
 
@@ -240,4 +240,4 @@ The Skill governs figure planning and rendering. It does not become the authorit
 
 ## 13. Distribution note
 
-A standalone Skill directory is appropriate for local authoring, user-scoped use, and repository-scoped workflows. Current OpenAI guidance recommends packaging reusable third-party distribution as a plugin when broader one-click distribution is desired. Plugin packaging is separate from the v1.1.0 scientific figure contract and is not required for the manual installation methods in this guide.
+A standalone Skill directory is appropriate for local authoring, user-scoped use, and repository-scoped workflows. Current OpenAI guidance recommends packaging reusable third-party distribution as a plugin when broader one-click distribution is desired. Plugin packaging is separate from the v1.1.1 documentation patch and is not required for the manual installation methods in this guide.
