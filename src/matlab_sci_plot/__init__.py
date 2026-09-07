@@ -1,6 +1,6 @@
 """Contract-first scientific figure planning primitives."""
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 from .contracts import ContractError, validate_contract
 from .registry import Registry
