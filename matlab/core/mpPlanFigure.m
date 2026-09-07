@@ -11,6 +11,26 @@ end
 if ~strcmp(contract.contract_type, 'figure_contract') || ~strcmp(contract.contract_version, '1.0')
     error('matlab_sci_plot:UnsupportedContract', 'Figure Contract must use supported version 1.0.');
 end
+failOnAuditErrors(mpAudit(contract));
+if isfield(contract, 'panels') && ~isempty(contract.panels)
+    panelContracts = normalizeItems(contract.panels);
+    panelPlans = cell(1, numel(panelContracts));
+    for i = 1:numel(panelContracts)
+        panelPlans{i} = mpPlanFigure(panelContracts{i}, rootDir, backend);
+    end
+    layoutId = 'small_multiples';
+    if isfield(contract, 'layout'), layoutId = char(string(contract.layout)); end
+    styleId = 'publication.general';
+    if isfield(contract, 'target_profile'), styleId = char(string(contract.target_profile)); end
+    plan = struct('contract_type','figure_plan','contract_version','1.0', ...
+        'family_id','composite.panel_narrative','layout_id',layoutId,'backend_id',backend, ...
+        'style_id',styleId,'candidate_rank',1,'compatibility_reason','panel contracts independently planned', ...
+        'panel_count',numel(panelPlans),'scale_policy','shared','renderer_entrypoint','', ...
+        'panels',{panelPlans});
+    if isfield(contract, 'scale_policy'), plan.scale_policy = char(string(contract.scale_policy)); end
+    if isfield(contract, 'final_size'), plan.final_size = contract.final_size; end
+    return;
+end
 roles = {};
 if isfield(contract, 'roles')
     names = fieldnames(contract.roles);
@@ -41,4 +61,21 @@ plan = struct('contract_type','figure_plan','contract_version','1.0', ...
 if isfield(contract, 'target_profile'), plan.style_id = char(string(contract.target_profile)); end
 if isfield(contract, 'panel_count'), plan.panel_count = contract.panel_count; end
 if isfield(contract, 'scale_policy'), plan.scale_policy = char(string(contract.scale_policy)); end
+if isfield(contract, 'final_size'), plan.final_size = contract.final_size; end
+end
+
+function items = normalizeItems(value)
+if iscell(value)
+    items = value;
+else
+    items = arrayfun(@(item) item, value, 'UniformOutput', false);
+end
+end
+
+function failOnAuditErrors(findings)
+for i = 1:numel(findings)
+    if strcmp(findings(i).severity, 'error')
+        error('matlab_sci_plot:ScientificAudit', '%s: %s', findings(i).code, findings(i).message);
+    end
+end
 end
