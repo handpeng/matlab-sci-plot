@@ -1,4 +1,4 @@
-function manifest = mpWriteEvidence(contract, plan, review, outputs, outputDir)
+function manifest = mpWriteEvidence(contract, plan, review, outputs, outputDir, runtimeTypography)
 % Bind a real MATLAB-rendered artifact to review/provenance evidence.
 if nargin < 5, outputDir = pwd; end
 if ~mpReviewAccepted(review)
@@ -6,6 +6,17 @@ if ~mpReviewAccepted(review)
 end
 if ~isfield(plan, 'contract_version') || ~strcmp(char(string(plan.contract_version)), '1.0')
     error('matlab_sci_plot:UnsupportedPlan','Unsupported Figure Plan version.');
+end
+if nargin >= 6
+    % Check internal policy consistency; this does not establish glyph coverage.
+    try
+        expected = mpResolveFont(runtimeTypography.requested_font, runtimeTypography.contains_cjk, {runtimeTypography.resolved_font});
+        if ~isequal(orderfields(runtimeTypography),orderfields(expected))
+            error('matlab_sci_plot:InvalidTypographyEvidence','Typography state is inconsistent.');
+        end
+    catch exception
+        error('matlab_sci_plot:InvalidTypographyEvidence','Invalid runtime typography state: %s', exception.message);
+    end
 end
 versionPath = fullfile(fileparts(fileparts(fileparts(mfilename('fullpath')))), 'VERSION');
 skillVersion = strtrim(fileread(versionPath));
@@ -24,14 +35,19 @@ manifest = struct('manifest_type','figure_evidence','manifest_version','1.0', ..
     'style_profile',char(string(plan.style_id)),'selected_candidate',char(string(plan.family_id)), ...
     'review_result',review,'outputs',[]);
 if isfield(plan, 'final_size'), manifest.final_dimensions = plan.final_size; end
+if nargin >= 6, manifest.typography = runtimeTypography; end
 for i = 1:numel(outputs)
     item = struct('path',outputs{i},'sha256',mpSha256(outputs{i}));
     if isempty(manifest.outputs), manifest.outputs = item; else, manifest.outputs(end+1) = item; end %#ok<AGROW>
 end
 if ~exist(outputDir, 'dir'), mkdir(outputDir); end
-fid = fopen(fullfile(outputDir,'figure_manifest.json'),'w'); cleanup = onCleanup(@() fclose(fid));
+fid = fopen(fullfile(outputDir,'figure_manifest.json'),'w','n','UTF-8');
+if fid == -1, error('matlab_sci_plot:EvidenceWriteFailed','Cannot open manifest output.'); end
+cleanup = onCleanup(@() fclose(fid));
 fprintf(fid, '%s', jsonencode(manifest));
-fidReview = fopen(fullfile(outputDir,'figure_review.json'),'w'); cleanupReview = onCleanup(@() fclose(fidReview));
+fidReview = fopen(fullfile(outputDir,'figure_review.json'),'w','n','UTF-8');
+if fidReview == -1, error('matlab_sci_plot:EvidenceWriteFailed','Cannot open review output.'); end
+cleanupReview = onCleanup(@() fclose(fidReview));
 fprintf(fidReview, '%s', jsonencode(review));
 end
 

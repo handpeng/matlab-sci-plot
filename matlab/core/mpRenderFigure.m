@@ -52,7 +52,7 @@ end
 mpExport(fig, string(pngPath), Format="png", Resolution=300);
 mpExport(fig, string(pdfPath), Format="pdf");
 if nargin >= 6 && ~isempty(review)
-    manifest = mpWriteEvidence(contract, plan, review, {pngPath, pdfPath}, outputDir);
+    manifest = mpWriteEvidence(contract, plan, review, {pngPath, pdfPath}, outputDir, typography);
 else
     manifest = struct();
 end
