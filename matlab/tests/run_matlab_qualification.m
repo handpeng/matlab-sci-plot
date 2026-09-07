@@ -25,6 +25,9 @@ end
 
 pending = acceptedReview(); pending.dimensions.final_size_legibility = 'REVIEW_REQUIRED';
 assert(~mpReviewAccepted(pending), 'Incomplete visual review must not be accepted.');
+distribution = base; distribution.communication_task = 'distribution'; distribution.roles = struct('value','numeric'); distribution.data_bindings = struct('value','synthetic');
+distributionPlan = mpPlanFigure(distribution, rootDir, 'matlab');
+assert(strcmp(distributionPlan.layout_id,'single'), 'A one-panel family must not allocate an empty paired tile.');
 p1 = base; p1.panel_label = '(a)'; p1.labels = struct('x','Temperature','y','Conductivity'); p1.units = struct('x','degC','y','W/(m K)');
 p2 = base; p2.panel_label = '(b)'; p2.communication_task = 'distribution'; p2.roles = struct('value','numeric'); p2.data_bindings = struct('value','synthetic'); p2.labels = struct('value','Error'); p2.units = struct('value','W/(m K)');
 composite = struct('contract_type','figure_contract','contract_version','1.0','purpose','native qualification', ...

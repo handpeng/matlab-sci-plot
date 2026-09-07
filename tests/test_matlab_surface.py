@@ -38,6 +38,7 @@ class MatlabSurfaceTests(unittest.TestCase):
         planner = (root / "matlab/core/mpPlanFigure.m").read_text(encoding="utf-8")
         self.assertIn("hasNativeRenderer", planner)
         self.assertIn("mpRenderUnsupportedFamily", planner)
+        self.assertIn("layoutId = 'single'", planner)
 
     def test_native_scientific_and_evidence_gates_are_complete(self):
         root = Path(__file__).parents[1]

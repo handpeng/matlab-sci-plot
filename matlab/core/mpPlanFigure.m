@@ -52,8 +52,12 @@ if isempty(scores), error('matlab_sci_plot:NoCompatibleFamily', 'No family is co
 family = registry(scores(1));
 manifest = jsondecode(fileread(fullfile(rootDir, 'manifests', 'families', [family.id '.json'])));
 layouts = cellstr(string(manifest.recommended_layout_primitives));
-layoutId = layouts{1};
-if isfield(contract, 'layout'), layoutId = char(string(contract.layout)); end
+layoutId = 'single';
+if isfield(contract, 'layout')
+    layoutId = char(string(contract.layout));
+elseif isfield(contract, 'panel_count') && contract.panel_count > 1
+    layoutId = layouts{1};
+end
 plan = struct('contract_type','figure_plan','contract_version','1.0', ...
     'family_id',char(string(family.id)),'layout_id',layoutId,'backend_id',backend, ...
     'style_id','publication.general','candidate_rank',1,'compatibility_reason','manifest roles/task/backend compatible', ...
