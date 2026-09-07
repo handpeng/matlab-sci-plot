@@ -18,7 +18,10 @@ for i = 1:numel(contracts)
     plan = mpPlanFigure(contracts{i}, rootDir, 'matlab');
     data = struct('truth',truth,'prediction',prediction,'x',truth,'y',prediction, ...
         'values',prediction,'labels',{{'A','B','C'}});
-    rendered = mpRenderFigure(contracts{i}, plan, style, data, outputDir);
+    review = struct('record_type','figure_review','record_version','1.0','verdict','accept','scientific_correctness','PASS', ...
+        'dimensions',struct('claim_support','PASS','statistical_transparency','PASS','perceptual_clarity','PASS','layout_hierarchy','PASS', ...
+        'accessibility','PASS','style_consistency','PASS','final_size_legibility','PASS','reproducibility','PASS'));
+    rendered = mpRenderFigure(contracts{i}, plan, style, data, outputDir, review);
     reports(i) = struct('family_id', rendered.family_id, 'png', rendered.png, 'pdf', rendered.pdf);
 end
 mpMetallurgyPattern('external_generalization');
