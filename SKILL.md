@@ -22,6 +22,7 @@ Use this skill when a figure must communicate a scientific claim reproducibly, n
 - Shared Class-B summaries use one tested definition. Renderers do not silently perform Class-C inference.
 - Negative R2 is preserved. Uncertainty is shown only when its semantics are declared.
 - Scientific integrity constraints outrank style/profile preferences.
+- CJK text requires a runtime-available governed font; fail closed before preview/final export if none resolves. CJK Builder smoke is not Stage 3 qualification.
 - New families, profiles, palettes, audit rules, repairs, and domain patterns are registered by metadata; do not add a central family switch.
 
 ## Routing
@@ -31,11 +32,11 @@ Use this skill when a figure must communicate a scientific claim reproducibly, n
 - Family selection: `references/chart-selection.md`, `matlab/families/`
 - Panel composition: `references/panel-layout.md`, `matlab/core/`
 - Style, color, profiles, final size: `references/style-system.md`, `references/color-system.md`, `profiles/`
+- Unicode/CJK text, font resolution, literal identifiers and qualification scope: `references/typography.md`
 - Review, repair, evidence: `references/review-contract.md`
 - Legacy migration: `references/legacy-migration.md`
 - Domain composition: `references/metallurgy-patterns.md`
 
-Run the local non-MATLAB suite with `python -m unittest discover -s tests -v`. MATLAB-dependent checks report `SKIPPED_UNAVAILABLE` when MATLAB cannot be found.
+Install test dependencies from `requirements-test.txt`, then run the local non-MATLAB suite with `python -m unittest discover -s tests -v`. MATLAB-dependent checks report `SKIPPED_UNAVAILABLE` when MATLAB cannot be found. The CJK implementation handoff is documented in `docs/CJK_STAGE2_HANDOFF.md`; it remains `IMPLEMENTED_PENDING_STAGE3`.
 
 The repository version is declared in `VERSION` and is recorded in generated plans and evidence manifests.
-

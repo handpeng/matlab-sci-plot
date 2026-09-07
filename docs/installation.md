@@ -202,6 +202,16 @@ git -C "$SKILL_ROOT" pull --ff-only
 
 A moving `main` checkout is not equivalent to a released tag pin.
 
+The CJK Builder increment on `main` is `IMPLEMENTED_PENDING_STAGE3`; the
+v1.1.1 installation instructions above intentionally retain the released tag.
+For development review, retain the complete checkout, including
+`policies/cjk_typography.json`, and record its exact commit. Install the Python
+test dependency with `python -m pip install -r requirements-test.txt`.
+CJK rendering discovers fonts with MATLAB `listfonts` and fails closed when no
+governed candidate is available. This repository does not install fonts.
+See [typography and Builder checks](../references/typography.md) for the runtime
+prerequisite, interpreter scope and smoke-versus-qualification distinction.
+
 ## 10. Disable without deleting
 
 Codex supports local Skill configuration in `~/.codex/config.toml`. To disable a discovered Skill while retaining the files, add an entry using the actual installed `SKILL.md` path:
