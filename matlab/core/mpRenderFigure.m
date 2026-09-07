@@ -1,8 +1,9 @@
-function result = mpRenderFigure(contract, plan, style, data, outputDir, review)
+function result = mpRenderFigure(contract, plan, style, data, outputDir, review, varargin)
 % Native MATLAB rendering boundary: plan -> tiledlayout -> family -> audit -> export.
 if nargin < 5, outputDir = pwd; end
 if ~strcmp(plan.backend_id, 'matlab'), error('matlab_sci_plot:BackendMismatch', 'V1 production backend is MATLAB.'); end
 fig = createFigure(style);
+figureCleanup = onCleanup(@() closeIfValid(fig));
 layout = mpBuildLayout(plan);
 t = tiledlayout(fig, layout.rows, layout.columns, 'Padding','compact', 'TileSpacing','compact');
 findings = mpAudit(contract);
@@ -33,13 +34,14 @@ end
 for i = 1:numel(findings)
     if strcmp(findings(i).severity, 'error'), close(fig); error('matlab_sci_plot:ScientificAudit', '%s: %s', findings(i).code, findings(i).message); end
 end
+typography = mpApplyTypography(fig, style, varargin{:});
 if ~exist(outputDir, 'dir'), mkdir(outputDir); end
 pngPath = fullfile(outputDir, 'figure.png');
 pdfPath = fullfile(outputDir, 'figure.pdf');
 if nargin < 6 || isempty(review)
     previewPath = fullfile(outputDir, 'candidate_preview.png');
     mpExport(fig, string(previewPath), Format="png", Resolution=300);
-    result = struct('png',previewPath,'pdf','','findings',findings,'family_id',plan.family_id,'manifest',struct());
+    result = struct('png',previewPath,'pdf','','findings',findings,'family_id',plan.family_id,'manifest',struct(),'typography',typography);
     close(fig);
     return;
 end
@@ -54,8 +56,12 @@ if nargin >= 6 && ~isempty(review)
 else
     manifest = struct();
 end
-result = struct('png',pngPath,'pdf',pdfPath,'findings',findings,'family_id',plan.family_id,'manifest',manifest);
+result = struct('png',pngPath,'pdf',pdfPath,'findings',findings,'family_id',plan.family_id,'manifest',manifest,'typography',typography);
 close(fig);
+end
+
+function closeIfValid(fig)
+if isgraphics(fig), close(fig); end
 end
 
 function fig = createFigure(style)

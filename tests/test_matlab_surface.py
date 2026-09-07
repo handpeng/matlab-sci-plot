@@ -9,12 +9,15 @@ class MatlabSurfaceTests(unittest.TestCase):
             "matlab/core/mpPlanFigure.m", "matlab/core/mpFamilyRegistry.m", "matlab/core/mpRenderFigure.m",
             "matlab/core/mpBuildLayout.m", "matlab/core/mpApplyStyle.m", "matlab/core/mpAudit.m", "matlab/core/mpExport.m",
             "matlab/core/mpWriteEvidence.m",
+            "matlab/core/mpTypographyPolicy.m", "matlab/core/mpContainsCJK.m",
+            "matlab/core/mpResolveFont.m", "matlab/core/mpApplyTypography.m",
             "matlab/core/mpAxisLabel.m", "matlab/core/mpDescriptiveMetrics.m", "matlab/core/mpReviewAccepted.m",
             "matlab/families/prediction/mpRenderPredictionParity.m", "matlab/families/relationship/mpRenderRelationshipScatter.m",
             "matlab/families/comparison/mpRenderComparisonMetricPanels.m", "matlab/families/distribution/mpRenderDistributionHistogram.m",
             "matlab/families/trend/mpRenderTrendLine.m", "matlab/families/explainability/mpRenderExplainability.m",
             "matlab/metallurgy/mpMetallurgyPattern.m",
             "matlab/tests/run_matlab_smoke.m", "matlab/tests/run_matlab_qualification.m",
+            "matlab/tests/run_matlab_typography_smoke.m",
         ]
         for relative in required:
             self.assertTrue((root / relative).exists(), relative)
