@@ -23,11 +23,16 @@ class DataIntegrityTests(unittest.TestCase):
         self.assertIn("time", roles["ordered"])
 
     def test_negative_controls(self):
-        findings = audit_contract({"requested_layers": {"uncertainty": True}, "encoding": "bar", "dual_y_axis": True})
+        findings = audit_contract({"requested_layers": {"uncertainty": True}, "encoding": "bar", "dual_y_axis": True, "category_count": 20, "scale_policy": "independent", "palette_id": "jet", "comparison_policy": "model_specific", "data_bindings": {"temperature": {"physical_quantity": True}}, "units": {}})
         codes = {finding["code"] for finding in findings}
         self.assertIn("UNCERTAINTY_UNDECLARED", codes)
         self.assertIn("BAR_ZERO_BASELINE", codes)
         self.assertIn("DUAL_AXIS_UNJUSTIFIED", codes)
+        self.assertIn("CATEGORICAL_OVERPOPULATION", codes)
+        self.assertIn("INDEPENDENT_SCALE_UNDISCLOSED", codes)
+        self.assertIn("QUANTITATIVE_RAINBOW_FORBIDDEN", codes)
+        self.assertIn("COMMON_SAMPLE_UNDISCLOSED", codes)
+        self.assertIn("UNIT_UNDECLARED", codes)
         with self.assertRaises(PermissionError):
             require_class_c_authority({}, "fit_regression")
 
