@@ -18,7 +18,20 @@ end
 state = mpResolveFont(style.typography.font_name, mpContainsCJK(visibleText), varargin{:});
 if state.contains_cjk
     fontname(fig, state.resolved_font);
+    % R2023b interprets sample identifiers such as 样品_A as subscripts.
+    % Keep literal CJK identifiers on ordinary text objects only. Explicit
+    % TeX commands/superscripts/braces, English text, legends and ticks retain
+    % their existing interpreter behavior; do not rewrite any String value.
+    for i = 1:numel(objects)
+        object = objects(i);
+        if ~isgraphics(object,'text') || ~strcmp(object.Interpreter,'tex'), continue; end
+        value = string(object.String);
+        if mpContainsCJK(value) && any(contains(value,'_'),'all') && ...
+                ~any(contains(value,{char(92),'^','{','}'}),'all')
+            object.Interpreter = 'none';
+        end
+    end
 end
 % English retains the existing mpApplyStyle/family font behavior unchanged.
-% Font size, geometry, text interpretation and scientific data are untouched.
+% Font size, geometry and scientific data are untouched.
 end
