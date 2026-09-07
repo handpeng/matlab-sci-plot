@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
@@ -30,7 +31,7 @@ def _schema(name: str) -> dict[str, Any]:
 
 
 def _validate_schema(value: Any, schema: Mapping[str, Any], root: Mapping[str, Any], path: str = "$") -> None:
-    """Evaluate the small schema vocabulary used by the Figure Contract.
+    """Evaluate the small schema vocabulary used by Figure Contracts/evidence.
 
     This is not a general JSON Schema engine. Unsupported schema keywords fail
     closed so extending the authority cannot silently bypass runtime validation.
@@ -38,7 +39,8 @@ def _validate_schema(value: Any, schema: Mapping[str, Any], root: Mapping[str, A
     """
     supported = {"$schema", "$id", "title", "description", "$defs", "$ref", "type", "const",
                  "required", "properties", "additionalProperties", "minProperties", "items",
-                 "minItems", "maxItems", "minimum", "exclusiveMinimum", "anyOf"}
+                 "minItems", "maxItems", "minimum", "exclusiveMinimum", "anyOf",
+                 "pattern", "minLength", "enum"}
     if set(schema) - supported:
         raise ContractError(f"unsupported schema keywords at {path}: {sorted(set(schema) - supported)}")
     if "$ref" in schema:
@@ -58,6 +60,13 @@ def _validate_schema(value: Any, schema: Mapping[str, Any], root: Mapping[str, A
             raise ContractError(f"{path} must have type {wanted}")
     if "const" in schema and value != schema["const"]:
         raise ContractError(f"{path} must equal {schema['const']!r}")
+    if "enum" in schema and value not in schema["enum"]:
+        raise ContractError(f"{path} must be a governed enum value")
+    if isinstance(value, str):
+        if len(value) < schema.get("minLength", 0):
+            raise ContractError(f"{path} is too short")
+        if "pattern" in schema and not re.search(schema["pattern"], value):
+            raise ContractError(f"{path} does not match the governed pattern")
     if number:
         if isinstance(value, float) and not math.isfinite(value):
             raise ContractError(f"{path} must be finite JSON data")
@@ -137,6 +146,18 @@ def validate_contract(payload: Mapping[str, Any], expected_type: str | None = No
     if ctype == "figure_contract":
         schema = _schema("figure_contract")
         _validate_schema(payload, schema, schema)
+    if ctype == "figure_evidence":
+        schema = _schema("evidence_manifest")
+        _validate_schema(payload, schema, schema)
+        if "typography" in payload:
+            from .typography import resolve_font
+            state = payload["typography"]
+            try:
+                expected = resolve_font(state["requested_font"], state["contains_cjk"], [state["resolved_font"]])
+            except ValueError as exc:
+                raise ContractError("invalid governed typography evidence") from exc
+            if state != expected:
+                raise ContractError("typography evidence does not match governed resolution state")
     if ctype == "figure_review" and payload["scientific_correctness"] == "FAIL" and payload["verdict"] == "accept":
         raise ContractError("scientific failure cannot be accepted")
     return dict(payload)

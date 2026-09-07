@@ -11,6 +11,23 @@
     "contract_versions": {"type": "object"},
     "source_data": {"type": "object"},
     "matlab_version": {"type": ["string", "null"]},
+    "candidate_sha": {"type": "string"},
+    "qualification_timestamp": {"type": "string"},
+    "renderer_identity": {"type": "array", "items": {"type": "string"}},
+    "family_id": {"type": "string"},
+    "typography": {
+      "type": "object",
+      "required": ["contains_cjk", "requested_font", "resolved_font", "font_policy_id", "policy_version", "resolution"],
+      "properties": {
+        "contains_cjk": {"type": "boolean"},
+        "requested_font": {"type": "string", "minLength": 1},
+        "resolved_font": {"type": "string", "minLength": 1},
+        "font_policy_id": {"type": "string", "minLength": 1},
+        "policy_version": {"type": "string", "minLength": 1},
+        "resolution": {"enum": ["requested_english", "requested_cjk", "fallback_cjk"]}
+      },
+      "additionalProperties": false
+    },
     "style_profile": {"type": "string"},
     "final_dimensions": {"type": "object"},
     "palette": {"type": "object"},
