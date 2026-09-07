@@ -8,6 +8,7 @@ class MatlabSurfaceTests(unittest.TestCase):
         required = [
             "matlab/core/mpPlanFigure.m", "matlab/core/mpFamilyRegistry.m", "matlab/core/mpRenderFigure.m",
             "matlab/core/mpBuildLayout.m", "matlab/core/mpApplyStyle.m", "matlab/core/mpAudit.m", "matlab/core/mpExport.m",
+            "matlab/core/mpWriteEvidence.m",
             "matlab/families/prediction/mpRenderPredictionParity.m", "matlab/families/relationship/mpRenderRelationshipScatter.m",
             "matlab/families/comparison/mpRenderComparisonMetricPanels.m", "matlab/families/distribution/mpRenderDistributionHistogram.m",
             "matlab/families/trend/mpRenderTrendLine.m", "matlab/families/explainability/mpRenderExplainability.m",
@@ -25,6 +26,8 @@ class MatlabSurfaceTests(unittest.TestCase):
         self.assertIn("entry = struct()", registry)
         self.assertIn("cellstr(string(payload.communication_tasks))", registry)
         self.assertIn("str2func", renderer)
+        self.assertIn("mpWriteEvidence", renderer)
+        self.assertIn("ReviewGate", renderer)
         self.assertNotIn("switch plan.family_id", renderer)
         smoke = (root / "matlab/tests/run_matlab_smoke.m").read_text(encoding="utf-8")
         self.assertNotIn("switch plan.family_id", smoke)
