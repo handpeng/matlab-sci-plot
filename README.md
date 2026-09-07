@@ -14,6 +14,20 @@ The V1 architecture is contract-first: scientific intent is bound into a version
 
 See [`docs/RELEASE_NOTES_V1.1.1.md`](docs/RELEASE_NOTES_V1.1.1.md) for the patch-release summary and [`docs/RELEASE_NOTES_V1.1.0.md`](docs/RELEASE_NOTES_V1.1.0.md) for the underlying scientific qualification evidence.
 
+## CJK Builder increment on main
+
+The subsequent Chinese/CJK implementation is **IMPLEMENTED_PENDING_STAGE3**.
+It accepts governed UTF-8 labels, detects CJK deterministically, resolves fonts
+from a shared policy and actual MATLAB inventory, and records the applied font
+in evidence. Missing governed fonts stop preview and final export.
+
+Synthetic CJK smoke checks have passed on Windows MATLAB R2023b
+(`23.2.0.2365128`). Chinese PNG/vector-PDF glyph qualification, cross-platform
+certification and release qualification have **not** been performed. The
+v1.1.1 tag and `VERSION` are unchanged; the tag does not include this increment.
+See [typography policy](references/typography.md) and
+[Stage 2 handoff](docs/CJK_STAGE2_HANDOFF.md) for behavior and exact-candidate evidence.
+
 ## What this Skill does
 
 Use this Skill when a scientific figure must communicate a claim reproducibly rather than merely look attractive in a MATLAB window.
@@ -47,6 +61,8 @@ For production rendering:
 For repository validation utilities:
 
 - Python 3 is used by the non-MATLAB validation and test suite.
+- The CJK development suite also uses `jsonschema` from `requirements-test.txt`;
+  production Python helpers remain dependency-free.
 
 ## Install as a Codex Skill
 
@@ -130,11 +146,16 @@ research intent + external data binding
 From the Skill repository root:
 
 ```bash
+python -m pip install -r requirements-test.txt
 python -m unittest discover -s tests -v
 python scripts/integration_check.py
 ```
 
 MATLAB-dependent checks report `SKIPPED_UNAVAILABLE` when MATLAB cannot be found; that is not equivalent to a MATLAB production qualification pass.
+
+Use the [native Builder entrypoints](references/typography.md#running-builder-checks)
+for actual MATLAB checks, including `run_matlab_cjk_smoke`. A MATLAB availability
+probe in the integration utility is not an execution of those smoke cases.
 
 ## Documentation map
 
@@ -145,6 +166,7 @@ MATLAB-dependent checks report `SKIPPED_UNAVAILABLE` when MATLAB cannot be found
 - Chart selection: [`references/chart-selection.md`](references/chart-selection.md)
 - Panel composition: [`references/panel-layout.md`](references/panel-layout.md)
 - Style system: [`references/style-system.md`](references/style-system.md)
+- Typography/CJK: [`references/typography.md`](references/typography.md)
 - Color system: [`references/color-system.md`](references/color-system.md)
 - Review/evidence contract: [`references/review-contract.md`](references/review-contract.md)
 - Legacy migration: [`references/legacy-migration.md`](references/legacy-migration.md)
