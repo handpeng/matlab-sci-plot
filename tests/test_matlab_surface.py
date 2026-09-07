@@ -18,6 +18,7 @@ class MatlabSurfaceTests(unittest.TestCase):
             "matlab/metallurgy/mpMetallurgyPattern.m",
             "matlab/tests/run_matlab_smoke.m", "matlab/tests/run_matlab_qualification.m",
             "matlab/tests/run_matlab_typography_smoke.m",
+            "matlab/tests/run_matlab_cjk_smoke.m", "matlab/tests/run_matlab_evidence_smoke.m",
         ]
         for relative in required:
             self.assertTrue((root / relative).exists(), relative)
