@@ -1,0 +1,13 @@
+{
+  "contract_type": "figure_contract",
+  "contract_version": "1.0",
+  "purpose": "博士论文",
+  "claim": {"primary": "温度升高时热导率发生变化"},
+  "data_bindings": {"x": "synthetic-temperature", "y": "synthetic-conductivity"},
+  "roles": {"x": "numeric", "y": "numeric"},
+  "communication_task": "relationship",
+  "labels": {"x": "温度", "y": "热导率"},
+  "units": {"x": "°C", "y": "W/(m·K)"},
+  "required_unit_roles": ["x", "y"],
+  "provenance": {"source_id": "synthetic-cjk-temperature-property"}
+}

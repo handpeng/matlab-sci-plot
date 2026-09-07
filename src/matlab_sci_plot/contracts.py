@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import math
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -19,6 +21,80 @@ CONTRACT_VERSIONS = {
 
 class ContractError(ValueError):
     """Raised when a contract is missing, malformed, or unsupported."""
+
+
+@lru_cache(maxsize=None)
+def _schema(name: str) -> dict[str, Any]:
+    path = Path(__file__).parents[2] / "schemas" / f"{name}.schema.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _validate_schema(value: Any, schema: Mapping[str, Any], root: Mapping[str, Any], path: str = "$") -> None:
+    """Evaluate the small schema vocabulary used by the Figure Contract.
+
+    This is not a general JSON Schema engine. Unsupported schema keywords fail
+    closed so extending the authority cannot silently bypass runtime validation.
+    Full Draft 2020-12 agreement is checked independently in contract tests.
+    """
+    supported = {"$schema", "$id", "title", "description", "$defs", "$ref", "type", "const",
+                 "required", "properties", "additionalProperties", "minProperties", "items",
+                 "minItems", "maxItems", "minimum", "exclusiveMinimum", "anyOf"}
+    if set(schema) - supported:
+        raise ContractError(f"unsupported schema keywords at {path}: {sorted(set(schema) - supported)}")
+    if "$ref" in schema:
+        ref = schema["$ref"]
+        if ref != "#" and not ref.startswith("#/$defs/"):
+            raise ContractError(f"unsupported schema reference: {ref}")
+        target = root if ref == "#" else root["$defs"][ref[len("#/$defs/"):]]
+        _validate_schema(value, target, root, path)
+    number = isinstance(value, (int, float)) and not isinstance(value, bool)
+    types = {"object": isinstance(value, Mapping), "array": isinstance(value, list),
+             "string": isinstance(value, str), "boolean": isinstance(value, bool),
+             "null": value is None, "number": number,
+             "integer": number and (isinstance(value, int) or (math.isfinite(value) and value.is_integer()))}
+    if "type" in schema:
+        wanted = schema["type"] if isinstance(schema["type"], list) else [schema["type"]]
+        if not any(types.get(kind, False) for kind in wanted):
+            raise ContractError(f"{path} must have type {wanted}")
+    if "const" in schema and value != schema["const"]:
+        raise ContractError(f"{path} must equal {schema['const']!r}")
+    if number:
+        if isinstance(value, float) and not math.isfinite(value):
+            raise ContractError(f"{path} must be finite JSON data")
+        if "minimum" in schema and value < schema["minimum"]:
+            raise ContractError(f"{path} is below minimum")
+        if "exclusiveMinimum" in schema and value <= schema["exclusiveMinimum"]:
+            raise ContractError(f"{path} must exceed minimum")
+    if isinstance(value, Mapping):
+        missing = set(schema.get("required", [])) - value.keys()
+        if missing:
+            raise ContractError(f"{path} missing required fields: {sorted(missing)}")
+        if len(value) < schema.get("minProperties", 0):
+            raise ContractError(f"{path} has too few properties")
+        properties = schema.get("properties", {})
+        extra = schema.get("additionalProperties", True)
+        for key, item in value.items():
+            if key in properties:
+                _validate_schema(item, properties[key], root, f"{path}.{key}")
+            elif extra is False:
+                raise ContractError(f"{path} unknown field: {key}")
+            elif isinstance(extra, Mapping):
+                _validate_schema(item, extra, root, f"{path}.{key}")
+    if isinstance(value, list):
+        if len(value) < schema.get("minItems", 0) or len(value) > schema.get("maxItems", len(value)):
+            raise ContractError(f"{path} has invalid item count")
+        if "items" in schema:
+            for index, item in enumerate(value):
+                _validate_schema(item, schema["items"], root, f"{path}[{index}]")
+    if "anyOf" in schema:
+        for alternative in schema["anyOf"]:
+            try:
+                _validate_schema(value, alternative, root, path)
+                break
+            except ContractError:
+                continue
+        else:
+            raise ContractError(f"{path} does not match any governed alternative")
 
 
 def _version(value: Any, field: str) -> tuple[int, int]:
@@ -58,6 +134,9 @@ def validate_contract(payload: Mapping[str, Any], expected_type: str | None = No
     missing = [key for key in required if key not in payload]
     if missing:
         raise ContractError(f"missing required fields: {', '.join(missing)}")
+    if ctype == "figure_contract":
+        schema = _schema("figure_contract")
+        _validate_schema(payload, schema, schema)
     if ctype == "figure_review" and payload["scientific_correctness"] == "FAIL" and payload["verdict"] == "accept":
         raise ContractError("scientific failure cannot be accepted")
     return dict(payload)
