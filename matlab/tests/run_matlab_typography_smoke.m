@@ -57,7 +57,7 @@ englishState = mpApplyTypography(englishFig,style,{});
 assert(~englishState.contains_cjk && strcmp(englishState.resolved_font,'Arial'));
 assert(isequal(names,get(findall(englishFig,'-property','FontName'),'FontName')));
 
-contract = jsondecode(fileread(fullfile(rootDir,'examples','chinese_temperature_property.json')));
+contract = mpReadJson(fullfile(rootDir,'examples','chinese_temperature_property.json'));
 plan = mpPlanFigure(contract,rootDir,'matlab'); data = struct('x',(1:3)','y',(2:4)');
 before = numel(findall(groot,'Type','figure'));
 % Both preview and accepted final export must fail before creating artifacts.

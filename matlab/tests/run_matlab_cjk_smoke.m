@@ -11,7 +11,7 @@ runtime = mpResolveFont('Arial',true,available);
 style = struct('typography',struct('font_name','Arial','resolved_pt',8), ...
     'geometry',struct('line_width_pt',0.8,'marker_size_pt',4.5),'axes',struct('grid','off'), ...
     'final_size',struct('width_mm',150,'height_mm',100));
-base = jsondecode(fileread(fullfile(rootDir,'examples','chinese_temperature_property.json')));
+base = mpReadJson(fullfile(rootDir,'examples','chinese_temperature_property.json'));
 base.provenance.candidate_sha = char(candidateSha);
 data = struct('x',(1:6)','y',[2;3;3.5;4;5;6]);
 review = smokeReview();
@@ -100,7 +100,7 @@ fprintf('MATLAB_CJK_SMOKE=PASS (%d cases)\nCJK_FINAL_QUALIFICATION=NOT_PERFORMED
         destination = fullfile(outputDir,id);
         result = mpRenderFigure(contract,currentPlan,currentStyle,boundData,destination,review,inventoryArgs{:});
         assert(isfile(result.png) && isfile(result.pdf) && isfile(fullfile(destination,'figure_manifest.json')));
-        manifest = jsondecode(fileread(fullfile(destination,'figure_manifest.json')));
+        manifest = mpReadJson(fullfile(destination,'figure_manifest.json'));
         assert(isequal(manifest.typography,expected) && isequal(result.typography,expected));
         assert(strcmp(manifest.candidate_sha,char(candidateSha)));
         assert(numel(manifest.outputs)==2 && all(arrayfun(@(item) numel(item.sha256)==64,manifest.outputs)));

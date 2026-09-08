@@ -37,6 +37,14 @@ Claims, purpose metadata, source paths and numeric values do not select fonts.
 The deterministic Unicode ranges are stored with the font policy; detection
 uses no language model, locale guessing or translation.
 
+For MATLAB JSON consumption, use `mpReadJson(path)` after adding the repository
+to the MATLAB path. Validate the governed contract structure before planning.
+The reader explicitly decodes UTF-8 bytes. On the tested Windows R2023b runtime,
+`jsondecode(fileread(path))` can replace supplementary characters such as
+U+20000 with U+001A, even when `fileread` requests UTF-8. The centralized reader
+preserves those characters in contracts and evidence. Supplementary detection
+and round-trip support do not establish a font's supplementary glyph coverage.
+
 ## One authoritative font policy
 
 [policies/cjk_typography.json](../policies/cjk_typography.json) is the single
