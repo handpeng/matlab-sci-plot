@@ -50,7 +50,7 @@ for i = 1:numel(registry)
 end
 if isempty(scores), error('matlab_sci_plot:NoCompatibleFamily', 'No family is compatible with task and roles.'); end
 family = registry(scores(1));
-manifest = jsondecode(fileread(fullfile(rootDir, 'manifests', 'families', [family.id '.json'])));
+manifest = mpReadJson(fullfile(rootDir, 'manifests', 'families', [family.id '.json']));
 layouts = cellstr(string(manifest.recommended_layout_primitives));
 layoutId = 'single';
 if isfield(contract, 'layout')

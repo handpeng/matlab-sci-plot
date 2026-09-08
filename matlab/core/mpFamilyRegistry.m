@@ -8,7 +8,7 @@ files = dir(fullfile(manifestDir, '*.json'));
 registry = struct('id', {}, 'manifest_version', {}, 'communication_tasks', {}, ...
     'data_roles_required', {}, 'renderer_backend', {}, 'matlab_renderer', {}, 'status', {});
 for i = 1:numel(files)
-    payload = jsondecode(fileread(fullfile(files(i).folder, files(i).name)));
+    payload = mpReadJson(fullfile(files(i).folder, files(i).name));
     if ~isfield(payload, 'manifest_version') || startsWith(string(payload.manifest_version), '2.')
         error('matlab_sci_plot:UnsupportedManifest', 'Unsupported family manifest version.');
     end
