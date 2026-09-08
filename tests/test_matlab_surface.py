@@ -8,7 +8,7 @@ class MatlabSurfaceTests(unittest.TestCase):
         required = [
             "matlab/core/mpPlanFigure.m", "matlab/core/mpFamilyRegistry.m", "matlab/core/mpRenderFigure.m",
             "matlab/core/mpBuildLayout.m", "matlab/core/mpApplyStyle.m", "matlab/core/mpAudit.m", "matlab/core/mpExport.m",
-            "matlab/core/mpWriteEvidence.m",
+            "matlab/core/mpWriteEvidence.m", "matlab/core/mpReadJson.m",
             "matlab/core/mpTypographyPolicy.m", "matlab/core/mpContainsCJK.m",
             "matlab/core/mpResolveFont.m", "matlab/core/mpApplyTypography.m",
             "matlab/core/mpAxisLabel.m", "matlab/core/mpDescriptiveMetrics.m", "matlab/core/mpReviewAccepted.m",
@@ -27,7 +27,10 @@ class MatlabSurfaceTests(unittest.TestCase):
         root = Path(__file__).parents[1]
         registry = (root / "matlab/core/mpFamilyRegistry.m").read_text(encoding="utf-8")
         renderer = (root / "matlab/core/mpRenderFigure.m").read_text(encoding="utf-8")
-        self.assertIn("jsondecode", registry)
+        reader = (root / "matlab/core/mpReadJson.m").read_text(encoding="utf-8")
+        self.assertIn("mpReadJson(", registry)
+        self.assertIn("jsondecode(native2unicode(bytes,'UTF-8'))", reader)
+        self.assertIn("'*uint8'", reader)
         self.assertIn("entry = struct()", registry)
         self.assertIn("cellstr(string(payload.communication_tasks))", registry)
         self.assertIn("str2func", renderer)
