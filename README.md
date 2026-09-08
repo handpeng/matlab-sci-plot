@@ -6,27 +6,28 @@ The V1 architecture is contract-first: scientific intent is bound into a version
 
 ## Current release
 
-- Repository version: **v1.1.1**
+- Repository version: **v1.2.0**
 - Production backend: **MATLAB**
-- Runtime qualification basis: **v1.1.0 Stage 3 on MATLAB R2023b (`23.2.0.2365128`)**
+- Runtime qualification basis: **v1.2.0 CJK Stage 3 on Windows MATLAB R2023b (`23.2.0.2365128`)**
 - V1 contract/schema major version: **1.0**
-- v1.1.1 scope: **documentation/usability patch; no runtime or scientific-contract changes**
+- CJK qualification scope: **Windows MATLAB R2023b; no Linux/macOS certification**
 
-See [`docs/RELEASE_NOTES_V1.1.1.md`](docs/RELEASE_NOTES_V1.1.1.md) for the patch-release summary and [`docs/RELEASE_NOTES_V1.1.0.md`](docs/RELEASE_NOTES_V1.1.0.md) for the underlying scientific qualification evidence.
+See [`docs/RELEASE_NOTES_V1.2.0.md`](docs/RELEASE_NOTES_V1.2.0.md) for the release summary and [Issue #44](https://github.com/handpeng/matlab-sci-plot/issues/44) for the complete Stage 3 qualification record.
 
-## CJK Builder increment on main
+## Qualified CJK typography
 
-The subsequent Chinese/CJK implementation is **IMPLEMENTED_PENDING_STAGE3**.
-It accepts governed UTF-8 labels, detects CJK deterministically, resolves fonts
-from a shared policy and actual MATLAB inventory, and records the applied font
-in evidence. Missing governed fonts stop preview and final export.
+Version 1.2.0 accepts governed UTF-8 labels, detects CJK deterministically,
+resolves fonts from a shared policy and actual MATLAB inventory, and records the
+applied font in evidence. Missing governed fonts stop preview and final export.
 
-Synthetic CJK smoke checks have passed on Windows MATLAB R2023b
-(`23.2.0.2365128`). Chinese PNG/vector-PDF glyph qualification, cross-platform
-certification and release qualification have **not** been performed. The
-v1.1.1 tag and `VERSION` are unchanged; the tag does not include this increment.
-See [typography policy](references/typography.md) and
-[Stage 2 handoff](docs/CJK_STAGE2_HANDOFF.md) for behavior and exact-candidate evidence.
+Independent Stage 3 qualification passed on Windows MATLAB R2023b
+(`23.2.0.2365128`) at exact implementation SHA
+`21f7ffdc63d6664f6b1a989ae73ab4731dd7ccfb`. It included direct inspection of
+14 PNGs and 14 vector PDFs, governed-font negative controls, font-embedding
+inspection and provenance recomputation. See the
+[typography policy](references/typography.md) for the supported surface and
+qualification limits. Other operating systems and MATLAB releases are not
+claimed as qualified.
 
 ## What this Skill does
 
@@ -55,7 +56,7 @@ For Skill discovery and orchestration:
 For production rendering:
 
 - MATLAB is required;
-- **R2023b is the exact release-qualified runtime basis** inherited from v1.1.0;
+- **Windows R2023b is the exact CJK-qualified runtime basis** for v1.2.0;
 - other MATLAB releases are not claimed as release-qualified unless separately tested.
 
 For repository validation utilities:
@@ -73,7 +74,7 @@ For a reproducible installation, pin the released tag:
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-git clone --branch v1.1.1 --depth 1 \
+git clone --branch v1.2.0 --depth 1 \
   https://github.com/handpeng/matlab-sci-plot.git \
   "$HOME/.agents/skills/matlab-sci-plot"
 ```
@@ -106,7 +107,7 @@ cat "$HOME/.agents/skills/matlab-sci-plot/VERSION"
 Expected version for this release:
 
 ```text
-1.1.1
+1.2.0
 ```
 
 If the Skill does not appear in Codex after installation or an update, restart Codex and verify that the directory is inside a supported Skill discovery root.
@@ -171,11 +172,12 @@ probe in the integration utility is not an execution of those smoke cases.
 - Review/evidence contract: [`references/review-contract.md`](references/review-contract.md)
 - Legacy migration: [`references/legacy-migration.md`](references/legacy-migration.md)
 - Metallurgy composition patterns: [`references/metallurgy-patterns.md`](references/metallurgy-patterns.md)
-- v1.1.1 release notes: [`docs/RELEASE_NOTES_V1.1.1.md`](docs/RELEASE_NOTES_V1.1.1.md)
+- v1.2.0 release notes: [`docs/RELEASE_NOTES_V1.2.0.md`](docs/RELEASE_NOTES_V1.2.0.md)
+- v1.2.0 CJK qualification evidence: [Issue #44](https://github.com/handpeng/matlab-sci-plot/issues/44)
 - v1.1.0 qualification evidence: [`docs/RELEASE_NOTES_V1.1.0.md`](docs/RELEASE_NOTES_V1.1.0.md)
 
 ## Versioning
 
 The repository release version is declared in [`VERSION`](VERSION). Contract and manifest schema versions are managed independently from the repository version.
 
-For reproducible scientific work, prefer a released tag such as `v1.1.1` rather than an unpinned moving branch. The v1.1.1 patch does not alter the scientific runtime qualified in v1.1.0.
+For reproducible scientific work, prefer a released tag such as `v1.2.0` rather than an unpinned moving branch. Record the exact tag or commit with downstream figure evidence.
