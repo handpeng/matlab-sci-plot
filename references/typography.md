@@ -3,11 +3,12 @@
 Typography is presentation state. It must not alter scientific data, labels,
 units, claims, family selection or scientific audit rules.
 
-## Implemented scope and qualification boundary
+## Implemented and qualified scope
 
-The CJK Builder increment is **IMPLEMENTED_PENDING_STAGE3**. The released
-v1.1.1 tag still inherits the English/Arial qualification from v1.1.0 on MATLAB
-R2023b. It does not contain this subsequent CJK implementation.
+The v1.2.0 CJK increment passed independent Stage 3 qualification on Windows
+MATLAB R2023b (`23.2.0.2365128`) at exact implementation SHA
+`21f7ffdc63d6664f6b1a989ae73ab4731dd7ccfb`. Qualification is limited to that
+runtime environment and the governed text surfaces below.
 
 | Statement | What it establishes |
 | --- | --- |
@@ -15,11 +16,15 @@ R2023b. It does not contain this subsequent CJK implementation.
 | CJK detected | A deterministic Unicode range check found CJK text |
 | Runtime font resolved | A requested or fallback font met the candidate policy and runtime inventory |
 | CJK smoke tested | Synthetic runtime, export-existence and evidence checks passed on Windows MATLAB R2023b (`23.2.0.2365128`) |
-| Stage 3 qualified | **NOT_PERFORMED**; requires independent final-size PNG and vector-PDF glyph inspection of an exact candidate |
+| Stage 3 qualified | 14 original PNGs and 14 vector PDFs were independently inspected; 13 exercised CJK and one preserved the English path |
 
 No Linux/macOS or cross-platform CJK certification is claimed. Candidate fonts
-are not guarantees of glyph coverage or font embedding. Smoke review objects
-are synthetic gate inputs, not independent visual reviews.
+are not general guarantees of glyph coverage or font embedding. For the exact
+Stage 3 matrix, `pdffonts` verified embedded/subset/Unicode-mapped fonts in all
+14 PDFs. Supplementary Unicode ingestion and detection passed, but
+supplementary glyph rendering is not claimed. Smoke review objects remain
+synthetic gate inputs, not independent visual reviews. The complete evidence is
+recorded in [Issue #44](https://github.com/handpeng/matlab-sci-plot/issues/44).
 
 ## Governed text surfaces
 
@@ -111,7 +116,7 @@ its presence does not establish qualification. JSON evidence is UTF-8.
 font embedding or glyph correctness. Never rasterize vector output to hide font
 problems, hide scientific labels, or modify data/units to obtain an export.
 
-## Running Builder checks
+## Running runtime checks
 
 Run the Python suite after installing `requirements-test.txt`. With MATLAB,
 use explicit repository and temporary output paths:
@@ -137,5 +142,6 @@ Missing MATLAB is `SKIPPED_UNAVAILABLE`, never PASS. A font prerequisite error
 also remains a failure, not a successful smoke run.
 
 The existing `run_matlab_qualification` is used here solely as an English and
-scientific regression entrypoint. The Builder does not perform independent
-Stage 3 CJK or release qualification. See [Stage 2 handoff](../docs/CJK_STAGE2_HANDOFF.md).
+scientific regression entrypoint. Neither it nor `run_matlab_cjk_smoke` alone
+reproduces the independent visual/PDF qualification in Issue #44. See the
+[v1.2.0 release notes](../docs/RELEASE_NOTES_V1.2.0.md) for the released scope.

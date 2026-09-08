@@ -3,6 +3,44 @@
 All notable repository releases are documented here. Contract and manifest
 schema versions are managed independently from the repository version.
 
+## 1.2.0 - 2026-09-08
+
+### Added
+
+- Governed UTF-8 Chinese/CJK labels, units, legends, category/group labels,
+  feature ticks and composite panel-visible text in the existing Figure
+  Contract and MATLAB renderer architecture.
+- Deterministic Unicode-range CJK detection and one machine-readable ordered
+  CJK font candidate policy shared by Python and MATLAB.
+- Runtime font discovery and fail-closed CJK resolution through MATLAB
+  `listfonts`, with figure-wide native typography application.
+- Actual typography state in evidence manifests, including requested/resolved
+  font, policy identity/version and resolution route.
+- Synthetic CJK MATLAB smoke coverage and independent Stage 3 qualification
+  of real PNG and vector-PDF outputs.
+
+### Changed
+
+- Centralized MATLAB JSON input through explicit UTF-8 byte decoding so
+  supplementary Unicode survives Windows R2023b ingestion.
+- Ordinary CJK identifiers such as `样品_A` preserve literal underscores while
+  explicitly marked TeX scientific expressions retain their interpreter.
+- Repository and generated evidence version advanced to `1.2.0`; V1 contract
+  and manifest schema major versions remain `1.0`.
+
+### Qualified
+
+- Independent CJK Stage 3 passed at implementation SHA
+  `21f7ffdc63d6664f6b1a989ae73ab4731dd7ccfb` on Windows MATLAB R2023b
+  (`23.2.0.2365128`).
+- All 52 non-MATLAB tests, six native MATLAB entrypoints, English/scientific
+  regression, nine CJK negative-control categories and evidence provenance
+  passed.
+- Fourteen PNGs and fourteen vector PDFs were individually inspected; all
+  listed PDF fonts were verified embedded, subset and Unicode mapped.
+- Qualification is not a Linux/macOS claim and does not claim supplementary
+  font glyph coverage. See Issue #44 and `docs/RELEASE_NOTES_V1.2.0.md`.
+
 ## 1.1.1 - 2026-09-07
 
 ### Added

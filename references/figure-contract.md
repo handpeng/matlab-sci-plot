@@ -15,4 +15,4 @@ See [reconciliation audit](../docs/CJK_CONTRACT_RECONCILIATION.md) for the
 baseline drift and [Chinese fixture](../examples/chinese_temperature_property.json)
 for a synthetic example. Unicode acceptance does not qualify rendering; the
 [typography policy](typography.md) describes detection, font resolution and
-the pending Stage 3 boundary.
+the Windows MATLAB R2023b qualification boundary.
