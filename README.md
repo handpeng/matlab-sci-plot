@@ -6,28 +6,43 @@ The V1 architecture is contract-first: scientific intent is bound into a version
 
 ## Current release
 
-- Repository version: **v1.2.0**
+- Repository version: **v1.3.0**
 - Production backend: **MATLAB**
-- Runtime qualification basis: **v1.2.0 CJK Stage 3 on Windows MATLAB R2023b (`23.2.0.2365128`)**
+- Runtime qualification basis: **v1.3.0 Figure Relationship Semantics V1 on Linux MATLAB R2024a (`24.1.0.2537033`)**
 - V1 contract/schema major version: **1.0**
-- CJK qualification scope: **Windows MATLAB R2023b; no Linux/macOS certification**
+- Historical CJK qualification scope: **v1.2.0 Windows MATLAB R2023b; no new Linux CJK glyph claim**
 
-See [`docs/RELEASE_NOTES_V1.2.0.md`](docs/RELEASE_NOTES_V1.2.0.md) for the release summary and [Issue #44](https://github.com/handpeng/matlab-sci-plot/issues/44) for the complete Stage 3 qualification record.
+See [`docs/RELEASE_NOTES_V1.3.0.md`](docs/RELEASE_NOTES_V1.3.0.md) for the release summary and [Issue #53](https://github.com/handpeng/matlab-sci-plot/issues/53) for the complete Figure Relationship Semantics Stage 3 qualification record.
 
-## Qualified CJK typography
+## Qualified Figure Relationship Semantics
 
-Version 1.2.0 accepts governed UTF-8 labels, detects CJK deterministically,
-resolves fonts from a shared policy and actual MATLAB inventory, and records the
-applied font in evidence. Missing governed fonts stop preview and final export.
+Version 1.3.0 accepts an explicitly declared relationship, required data roles,
+pairing requirement and representation. It selects only compatible families,
+verifies supplied observations before rendering, keeps summary statistics as
+annotations, and blocks governed export when a relationship prerequisite fails.
+Provider bindings remain explicit and authorized aggregate representations are
+never inferred implicitly.
 
-Independent Stage 3 qualification passed on Windows MATLAB R2023b
-(`23.2.0.2365128`) at exact implementation SHA
-`21f7ffdc63d6664f6b1a989ae73ab4731dd7ccfb`. It included direct inspection of
-14 PNGs and 14 vector PDFs, governed-font negative controls, font-embedding
-inspection and provenance recomputation. See the
-[typography policy](references/typography.md) for the supported surface and
-qualification limits. Other operating systems and MATLAB releases are not
-claimed as qualified.
+Fresh Stage 3 qualification passed on Linux MATLAB R2024a
+(`24.1.0.2537033`) at exact implementation SHA
+`bed373a3a3b07dda5fcf8663f483cf3df41dc1b6`. It covered actual scatter, trend,
+parity and composite renders, provider mapping, authorized aggregate data,
+annotation separation, fail-closed negative controls and evidence binding.
+The plotter does not invent paired observations or upgrade a scientific claim.
+
+## Historical CJK compatibility
+
+The v1.2.0 CJK capability remains in the same contract-first architecture:
+UTF-8 detection, governed font resolution, evidence state and deterministic
+`CJKFontUnavailable` failure before preview/final export. Its independent
+positive glyph qualification remains the Windows MATLAB R2023b evidence in
+[Issue #44](https://github.com/handpeng/matlab-sci-plot/issues/44).
+
+The Linux MATLAB R2024a environment used for v1.3.0 exposed zero
+policy-governed CJK candidates. CJK fail-closed regression passed, but no new
+positive CJK glyph, arbitrary-font, cross-platform or supplementary glyph
+qualification is claimed. This repository does not bundle, install or download
+fonts.
 
 ## What this Skill does
 
@@ -56,8 +71,9 @@ For Skill discovery and orchestration:
 For production rendering:
 
 - MATLAB is required;
-- **Windows R2023b is the exact CJK-qualified runtime basis** for v1.2.0;
-- other MATLAB releases are not claimed as release-qualified unless separately tested.
+- **Linux MATLAB R2024a is the exact relationship-qualified runtime basis** for v1.3.0;
+- **Windows MATLAB R2023b remains the historical CJK-qualified basis** for v1.2.0;
+- other MATLAB releases and platforms are not claimed as release-qualified unless separately tested.
 
 For repository validation utilities:
 
@@ -74,7 +90,7 @@ For a reproducible installation, pin the released tag:
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-git clone --branch v1.2.0 --depth 1 \
+git clone --branch v1.3.0 --depth 1 \
   https://github.com/handpeng/matlab-sci-plot.git \
   "$HOME/.agents/skills/matlab-sci-plot"
 ```
@@ -107,7 +123,7 @@ cat "$HOME/.agents/skills/matlab-sci-plot/VERSION"
 Expected version for this release:
 
 ```text
-1.2.0
+1.3.0
 ```
 
 If the Skill does not appear in Codex after installation or an update, restart Codex and verify that the directory is inside a supported Skill discovery root.
@@ -172,7 +188,9 @@ probe in the integration utility is not an execution of those smoke cases.
 - Review/evidence contract: [`references/review-contract.md`](references/review-contract.md)
 - Legacy migration: [`references/legacy-migration.md`](references/legacy-migration.md)
 - Metallurgy composition patterns: [`references/metallurgy-patterns.md`](references/metallurgy-patterns.md)
-- v1.2.0 release notes: [`docs/RELEASE_NOTES_V1.2.0.md`](docs/RELEASE_NOTES_V1.2.0.md)
+- v1.3.0 release notes: [`docs/RELEASE_NOTES_V1.3.0.md`](docs/RELEASE_NOTES_V1.3.0.md)
+- v1.3.0 relationship qualification evidence: [Issue #53](https://github.com/handpeng/matlab-sci-plot/issues/53)
+- v1.2.0 historical CJK release notes: [`docs/RELEASE_NOTES_V1.2.0.md`](docs/RELEASE_NOTES_V1.2.0.md)
 - v1.2.0 CJK qualification evidence: [Issue #44](https://github.com/handpeng/matlab-sci-plot/issues/44)
 - v1.1.0 qualification evidence: [`docs/RELEASE_NOTES_V1.1.0.md`](docs/RELEASE_NOTES_V1.1.0.md)
 
@@ -180,4 +198,4 @@ probe in the integration utility is not an execution of those smoke cases.
 
 The repository release version is declared in [`VERSION`](VERSION). Contract and manifest schema versions are managed independently from the repository version.
 
-For reproducible scientific work, prefer a released tag such as `v1.2.0` rather than an unpinned moving branch. Record the exact tag or commit with downstream figure evidence.
+For reproducible scientific work, prefer a released tag such as `v1.3.0` rather than an unpinned moving branch. Record the exact tag or commit with downstream figure evidence.

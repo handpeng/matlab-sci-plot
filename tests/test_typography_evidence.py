@@ -19,7 +19,7 @@ class TypographyEvidenceTests(unittest.TestCase):
         self.schema = json.loads((root / "schemas/evidence_manifest.schema.json").read_text())
         Draft202012Validator.check_schema(self.schema)
         self.validator = Draft202012Validator(self.schema)
-        self.base = {"manifest_type": "figure_evidence", "manifest_version": "1.0", "skill_version": "1.2.0",
+        self.base = {"manifest_type": "figure_evidence", "manifest_version": "1.0", "skill_version": "1.3.0",
                      "contract_versions": {"figure_plan": "1.0"}, "outputs": [],
                      "candidate_sha": "synthetic-sha", "qualification_timestamp": "2026-09-08T00:00:00Z",
                      "renderer_identity": ["mpRenderRelationshipScatter"], "family_id": "relationship.scatter"}

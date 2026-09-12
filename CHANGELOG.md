@@ -3,6 +3,38 @@
 All notable repository releases are documented here. Contract and manifest
 schema versions are managed independently from the repository version.
 
+## 1.3.0 - 2026-09-12
+
+### Added
+
+- Figure Relationship Semantics V1 for explicitly declared scientific
+  relationships, required data roles, pairing requirements and governed
+  representations.
+- Deterministic family compatibility and data-sufficiency checks for paired
+  observations, explicitly authorized aggregate representations, provider
+  mappings and annotation-only statistics.
+- Fail-closed relationship validation and evidence gates for missing,
+  mismatched, stale, malformed or unauthorized relationship inputs.
+
+### Qualified
+
+- Fresh Stage 3 qualification passed at exact implementation SHA
+  `bed373a3a3b07dda5fcf8663f483cf3df41dc1b6` on Linux MATLAB R2024a
+  (`24.1.0.2537033`), including scatter, trend, parity, composite, provider
+  mapping, authorized aggregate and scientific negative-control paths.
+- Historical English, UTF-8, style, layout, export, evidence and CJK
+  fail-closed behavior remains preserved. The tested Linux MATLAB runtime had
+  zero policy-governed CJK candidates, so no new positive CJK glyph
+  qualification is claimed.
+
+### Scope
+
+- The renderer does not fabricate missing observations, infer scientific data,
+  or become authority for an external manuscript or research dataset.
+- No fonts are bundled, installed or downloaded. CJK positive glyph
+  qualification remains limited to the historical v1.2.0 Windows MATLAB
+  evidence.
+
 ## 1.2.0 - 2026-09-08
 
 ### Added

@@ -25,7 +25,7 @@ The recommended manual installation for an individual user is:
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-git clone --branch v1.2.0 --depth 1 \
+git clone --branch v1.3.0 --depth 1 \
   https://github.com/handpeng/matlab-sci-plot.git \
   "$HOME/.agents/skills/matlab-sci-plot"
 ```
@@ -60,7 +60,7 @@ git submodule add \
   https://github.com/handpeng/matlab-sci-plot.git \
   .agents/skills/matlab-sci-plot
 
-git -C .agents/skills/matlab-sci-plot checkout v1.2.0
+git -C .agents/skills/matlab-sci-plot checkout v1.3.0
 git add .gitmodules .agents/skills/matlab-sci-plot
 ```
 
@@ -103,23 +103,23 @@ grep -E '^name: matlab-sci-plot$' "$SKILL_ROOT/SKILL.md"
 cat "$SKILL_ROOT/VERSION"
 ```
 
-For v1.2.0 the final command should print:
+For v1.3.0 the final command should print:
 
 ```text
-1.2.0
+1.3.0
 ```
 
-To verify the Git identity after the v1.2.0 tag has been published:
+To verify the Git identity after the v1.3.0 tag has been published:
 
 ```bash
 git -C "$SKILL_ROOT" describe --tags --exact-match
 git -C "$SKILL_ROOT" rev-parse HEAD
 ```
 
-For the released v1.2.0 installation, `git describe --tags --exact-match` should resolve to:
+For the released v1.3.0 installation, `git describe --tags --exact-match` should resolve to:
 
 ```text
-v1.2.0
+v1.3.0
 ```
 
 ## 6. Verify Codex discovery
@@ -153,16 +153,19 @@ python scripts/integration_check.py
 
 MATLAB-dependent checks may report `SKIPPED_UNAVAILABLE` if MATLAB cannot be found. That result is truthful environment reporting and must not be interpreted as a MATLAB production qualification pass.
 
-The CJK runtime qualification basis for v1.2.0 is the independent Stage 3 result
-at implementation SHA `21f7ffdc63d6664f6b1a989ae73ab4731dd7ccfb` on
-Windows MATLAB R2023b (`23.2.0.2365128`). It covered real Chinese PNG and vector
-PDF inspection, governed font resolution and fail-closed controls, English and
-scientific regression, font embedding, and evidence provenance. Other MATLAB
-releases and operating systems may work, but they are not claimed as qualified.
+The v1.3.0 relationship qualification basis is the fresh Stage 3 result at
+implementation SHA `bed373a3a3b07dda5fcf8663f483cf3df41dc1b6` on Linux MATLAB
+R2024a (`24.1.0.2537033`). It covered relationship family compatibility,
+paired-data sufficiency, annotation separation, provider mapping, actual
+scatter/trend/parity/composite exports and fail-closed scientific controls.
+The historical v1.2.0 CJK qualification remains the independent Windows MATLAB
+R2023b result at SHA `21f7ffdc63d6664f6b1a989ae73ab4731dd7ccfb`. The v1.3.0
+Linux runtime exposed zero policy-governed CJK candidates, so CJK fail-closed
+behavior passed but no new positive CJK glyph qualification is claimed.
 
 ## 8. MATLAB production smoke test
 
-When MATLAB R2023b is available, use the repository's MATLAB smoke and qualification surfaces rather than treating Python-only checks as sufficient production validation.
+When MATLAB R2024a is available, use the repository's MATLAB smoke and qualification surfaces rather than treating Python-only checks as sufficient production validation.
 
 The released architecture expects native MATLAB rendering through the registered family layer and final export through the governed review/evidence pipeline.
 
@@ -174,10 +177,12 @@ Before using a new machine for publication artifacts, confirm at minimum that:
 - scientific negative controls remain fail-closed; and
 - evidence/provenance manifests bind the generated artifacts.
 
-See [`RELEASE_NOTES_V1.2.0.md`](RELEASE_NOTES_V1.2.0.md) and
-[Stage 3 Issue #44](https://github.com/handpeng/matlab-sci-plot/issues/44) for
-the CJK qualification scope and evidence. The older v1.1.0 basis remains in
-[`RELEASE_NOTES_V1.1.0.md`](RELEASE_NOTES_V1.1.0.md).
+See [`RELEASE_NOTES_V1.3.0.md`](RELEASE_NOTES_V1.3.0.md) and
+[Release Qualify Issue #57](https://github.com/handpeng/matlab-sci-plot/issues/57)
+for the relationship qualification scope. See the historical
+[`RELEASE_NOTES_V1.2.0.md`](RELEASE_NOTES_V1.2.0.md) and
+[CJK Stage 3 Issue #44](https://github.com/handpeng/matlab-sci-plot/issues/44)
+for the positive CJK glyph qualification scope.
 
 ## 9. Upgrade
 
@@ -210,13 +215,14 @@ git -C "$SKILL_ROOT" pull --ff-only
 
 A moving `main` checkout is not equivalent to a released tag pin.
 
-The qualified v1.2.0 CJK capability requires the complete checkout, including
+The qualified v1.3.0 relationship capability and historical v1.2.0 CJK
+capability require the complete checkout, including
 `policies/cjk_typography.json`. Install the Python test dependency with
-`python -m pip install -r requirements-test.txt`. CJK rendering discovers fonts
-with MATLAB `listfonts` and fails closed when no governed candidate is
-available. This repository does not install fonts. See
-[typography and runtime checks](../references/typography.md) for the font
-prerequisite, interpreter scope and qualification limits.
+`python -m pip install -r requirements-test.txt`. Relationship rendering
+verifies explicit data roles before export. CJK rendering discovers fonts with
+MATLAB `listfonts` and fails closed when no governed candidate is available.
+This repository does not install fonts. See [typography and runtime checks](../references/typography.md)
+for the font prerequisite, interpreter scope and qualification limits.
 
 ## 10. Disable without deleting
 
@@ -256,4 +262,4 @@ The Skill governs figure planning and rendering. It does not become the authorit
 
 ## 13. Distribution note
 
-A standalone Skill directory is appropriate for local authoring, user-scoped use, and repository-scoped workflows. Current OpenAI guidance recommends packaging reusable third-party distribution as a plugin when broader one-click distribution is desired. Plugin packaging is separate from v1.2.0 and is not required for the manual installation methods in this guide.
+A standalone Skill directory is appropriate for local authoring, user-scoped use, and repository-scoped workflows. Current OpenAI guidance recommends packaging reusable third-party distribution as a plugin when broader one-click distribution is desired. Plugin packaging is separate from v1.3.0 and is not required for the manual installation methods in this guide.

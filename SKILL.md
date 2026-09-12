@@ -37,6 +37,6 @@ Use this skill when a figure must communicate a scientific claim reproducibly, n
 - Legacy migration: `references/legacy-migration.md`
 - Domain composition: `references/metallurgy-patterns.md`
 
-Install test dependencies from `requirements-test.txt`, then run the local non-MATLAB suite with `python -m unittest discover -s tests -v`. MATLAB-dependent checks report `SKIPPED_UNAVAILABLE` when MATLAB cannot be found. The v1.2.0 CJK capability is independently qualified on Windows MATLAB R2023b within the scope and limits documented in `references/typography.md` and `docs/RELEASE_NOTES_V1.2.0.md`.
+Install test dependencies from `requirements-test.txt`, then run the local non-MATLAB suite with `python -m unittest discover -s tests -v`. MATLAB-dependent checks report `SKIPPED_UNAVAILABLE` when MATLAB cannot be found. Figure Relationship Semantics V1 is qualified at the v1.3.0 source candidate on Linux MATLAB R2024a; the historical v1.2.0 CJK capability remains limited to the Windows MATLAB R2023b scope documented in `references/typography.md` and `docs/RELEASE_NOTES_V1.2.0.md`.
 
 The repository version is declared in `VERSION` and is recorded in generated plans and evidence manifests.
