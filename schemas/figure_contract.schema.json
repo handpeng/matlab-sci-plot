@@ -14,6 +14,14 @@
     "labels": {"$ref": "#/$defs/textMap"},
     "units": {"$ref": "#/$defs/textMap"},
     "communication_task": {"type": "string"},
+    "scientific_intent": {"type": "string"},
+    "required_relationship": {"$ref": "#/$defs/requiredRelationship"},
+    "required_data_roles": {"$ref": "#/$defs/strings"},
+    "pairing_requirement": {"enum": ["paired", "aggregate"]},
+    "relationship_representation": {"enum": ["paired_observations", "authorized_aggregate"]},
+    "minimum_data_requirement": {"$ref": "#/$defs/minimumDataRequirement"},
+    "allowed_transformations": {"$ref": "#/$defs/strings"},
+    "annotation_roles": {"$ref": "#/$defs/strings"},
     "panel_label": {"type": "string"},
     "panels": {"type": "array", "minItems": 1, "items": {"$ref": "#"}},
     "layout": {"type": "string"},
@@ -60,6 +68,25 @@
   "$defs": {
     "strings": {"type": "array", "items": {"type": "string"}},
     "textMap": {"type": "object", "additionalProperties": {"type": "string"}},
+    "requiredRelationship": {
+      "anyOf": [
+        {"type": "string", "enum": ["distance -> error", "distance->error", "distance_to_error"]},
+        {"type": "object", "required": ["id", "x_role", "y_role"], "properties": {
+          "id": {"const": "distance_to_error"},
+          "x_role": {"type": "string", "minLength": 1},
+          "y_role": {"type": "string", "minLength": 1}
+        }, "additionalProperties": false}
+      ]
+    },
+    "minimumDataRequirement": {
+      "anyOf": [
+        {"type": "integer", "minimum": 1},
+        {"type": "object", "required": ["observations"], "properties": {
+          "observations": {"type": "integer", "minimum": 1},
+          "roles": {"$ref": "#/$defs/strings"}
+        }, "additionalProperties": false}
+      ]
+    },
     "count": {"type": "integer", "minimum": 0},
     "counts": {"type": "object", "additionalProperties": {"$ref": "#/$defs/count"}}
   }
