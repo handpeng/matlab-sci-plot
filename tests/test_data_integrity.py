@@ -4,7 +4,7 @@ import unittest
 from src.matlab_sci_plot.audit import audit_contract, require_class_c_authority
 from src.matlab_sci_plot.data import (RelationshipDataError, common_valid_mask, infer_roles, r2, summary,
                                       validate_relationship_data)
-from src.matlab_sci_plot.contracts import validate_contract
+from src.matlab_sci_plot.contracts import ContractError, validate_contract, validate_relationship_semantics
 
 
 class DataIntegrityTests(unittest.TestCase):
@@ -93,6 +93,41 @@ class DataIntegrityTests(unittest.TestCase):
             "communication_task": "model_comparison", "provenance": {"source_id": "synthetic-summary"},
         }
         self.assertIsNone(validate_relationship_data(legacy, {"rho": 0.2, "p": 0.1, "n": 5}))
+
+    def test_provider_mapping_is_explicit_and_cannot_drop_required_roles(self):
+        contract = self.relationship_contract()
+        plan = {
+            "contract_type": "figure_plan", "contract_version": "1.0", "family_id": "relationship.scatter",
+            "layout_id": "single", "backend_id": "matlab", "style_id": "publication.general",
+            "required_relationship": contract["required_relationship"], "required_data_roles": contract["required_data_roles"],
+            "pairing_requirement": contract["pairing_requirement"], "relationship_representation": contract["relationship_representation"],
+            "roles": {}, "relationship_bindings": {"distance": "provider_distance", "error": "provider_error"},
+        }
+        data = {"provider_distance": [-3, 0, 4], "provider_error": [-2, 1, 5]}
+        result = validate_relationship_data(plan, data, family_id="relationship.scatter")
+        self.assertEqual(result["x"], data["provider_distance"])
+        dropped = dict(plan)
+        dropped["relationship_bindings"] = {"distance": "provider_distance"}
+        with self.assertRaisesRegex(ContractError, "RELATIONSHIP_ROLE_BINDING_MISSING"):
+            validate_relationship_data(dropped, data, family_id="relationship.scatter")
+
+    def test_stale_semantics_and_unauthorized_operations_fail_closed(self):
+        with self.assertRaisesRegex(ContractError, "UNKNOWN_RELATIONSHIP_SEMANTICS"):
+            validate_relationship_semantics({"required_relationship": "distance -> stale"})
+        with self.assertRaisesRegex(ContractError, "UNAUTHORIZED_RELATIONSHIP_TRANSFORMATION"):
+            validate_relationship_semantics({
+                "required_relationship": "distance -> error", "required_data_roles": ["distance", "error"],
+                "roles": {"distance": "numeric", "error": "numeric"},
+                "pairing_requirement": "paired", "relationship_representation": "paired_observations",
+                "allowed_transformations": ["smooth"],
+            })
+        with self.assertRaisesRegex(ContractError, "RELATIONSHIP_ANNOTATION_ROLE_OVERLAP"):
+            validate_relationship_semantics({
+                "required_relationship": "distance -> error", "required_data_roles": ["distance", "error"],
+                "roles": {"distance": "numeric", "error": "numeric"},
+                "pairing_requirement": "paired", "relationship_representation": "paired_observations",
+                "annotation_roles": ["distance"],
+            })
 
 
 if __name__ == "__main__":

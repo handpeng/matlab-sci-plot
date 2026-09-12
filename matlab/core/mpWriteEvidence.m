@@ -1,6 +1,12 @@
 function manifest = mpWriteEvidence(contract, plan, review, outputs, outputDir, runtimeTypography, relationshipData)
 % Bind a real MATLAB-rendered artifact to review/provenance evidence.
 if nargin < 5, outputDir = pwd; end
+findings = mpAudit(contract);
+for i = 1:numel(findings)
+    if strcmp(findings(i).severity, 'error')
+        error('matlab_sci_plot:ScientificAudit', '%s: %s', findings(i).code, findings(i).message);
+    end
+end
 if ~mpReviewAccepted(review)
     error('matlab_sci_plot:ReviewGate','Every governed review dimension must PASS before evidence can be written.');
 end

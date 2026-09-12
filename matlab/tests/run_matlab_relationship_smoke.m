@@ -30,6 +30,20 @@ expectFailure(@() mpWriteEvidence(base,plan,review,{rendered.png},fullfile(outpu
     'matlab_sci_plot:RelationshipGate');
 assert(~isfolder(fullfile(outputDir,'direct_without_data')));
 
+unauthorized = base;
+unauthorized.allowed_transformations = {'smooth'};
+expectFailure(@() mpWriteEvidence(unauthorized,plan,review,{rendered.png}, ...
+    fullfile(outputDir,'unauthorized_transformation'),style.typography,data), ...
+    'matlab_sci_plot:ScientificAudit');
+assert(~isfolder(fullfile(outputDir,'unauthorized_transformation')));
+
+stale = base;
+stale.required_relationship = 'distance -> stale';
+expectFailure(@() mpPlanFigure(stale,rootDir,'matlab'), 'matlab_sci_plot:ScientificAudit');
+malformed = base;
+malformed.pairing_requirement = 'aggregate';
+expectFailure(@() mpPlanFigure(malformed,rootDir,'matlab'), 'matlab_sci_plot:ScientificAudit');
+
 trend = base;
 trend.communication_task = 'trend';
 trend.roles = struct('distance','ordered','error','numeric');
@@ -40,6 +54,13 @@ trendData = struct('distance',[7,0,4,-3],'error',[6,1,5,-2]);
 assert(strcmp(mpValidateRelationshipData(trend,trendPlan,trendData).representation,'paired_observations'));
 trendRendered = mpRenderFigure(trend,trendPlan,style,trendData,fullfile(outputDir,'trend'),review);
 assert(isfile(trendRendered.png) && isfile(trendRendered.pdf));
+
+mappedPlan = plan;
+mappedPlan.relationship_bindings = struct('distance','provider_distance','error','provider_error');
+mappedData = struct('provider_distance',[-3;0;4;7],'provider_error',[-2;1;5;6], ...
+    'rho',-0.4,'p',0.2,'n',4);
+mappedRendered = mpRenderFigure(base,mappedPlan,style,mappedData,fullfile(outputDir,'provider_mapping'),review);
+assert(isfile(mappedRendered.png) && isfile(mappedRendered.pdf));
 
 expectFailure(@() mpRenderFigure(base,plan,style,struct('rho',-0.4,'p',0.2,'n',4), ...
     fullfile(outputDir,'summary_only'),review),'matlab_sci_plot:INSUFFICIENT_RELATIONSHIP_DATA');
@@ -59,7 +80,9 @@ assert(isfile(aggregateRendered.png) && isfile(aggregateRendered.pdf));
 report = struct('status','PASS','candidate_sha',char(candidateSha), ...
     'scatter','PASS','trend','PASS','annotation_separation','PASS', ...
     'summary_only_fail_closed','PASS','pairing_mismatch_fail_closed','PASS', ...
-    'authorized_aggregate','PASS','matlab_version',version);
+    'authorized_aggregate','PASS','unauthorized_transformation_fail_closed','PASS', ...
+    'stale_semantics_fail_closed','PASS','malformed_semantics_fail_closed','PASS', ...
+    'provider_mapping','PASS','matlab_version',version);
 fid = fopen(fullfile(outputDir,'relationship_smoke_report.json'),'w','n','UTF-8');
 assert(fid ~= -1); cleanup = onCleanup(@() fclose(fid)); %#ok<NASGU>
 fprintf(fid,'%s',jsonencode(report));
