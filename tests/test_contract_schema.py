@@ -66,6 +66,48 @@ class ContractSchemaTests(unittest.TestCase):
             with self.subTest(control=control):
                 self.check_agreement({**self.chinese, **control}, True)
 
+    def test_declared_relationship_semantics_are_additive_and_fail_closed(self):
+        relationship = copy.deepcopy(self.chinese)
+        relationship.update(
+            data_bindings={"distance": "synthetic-distance", "error": "synthetic-error"},
+            roles={"distance": "numeric", "error": "numeric"},
+            required_relationship="distance -> error",
+            required_data_roles=["distance", "error"],
+            pairing_requirement="paired",
+            relationship_representation="paired_observations",
+            minimum_data_requirement={"observations": 2, "roles": ["distance", "error"]},
+            allowed_transformations=["identity"],
+            annotation_roles=["rho", "p", "n"],
+        )
+        self.check_agreement(relationship, True)
+        self.assertEqual(validate_contract(relationship)["required_relationship"], "distance -> error")
+        unknown = copy.deepcopy(relationship)
+        unknown["required_relationship"] = "distance -> uncertainty"
+        self.check_agreement(unknown, False)
+
+        controls = [
+            {"required_data_roles": ["distance"]},
+            {"roles": {"distance": "numeric", "other": "numeric"}},
+            {"required_relationship": "distance -> error", "required_data_roles": ["distance", "error"], "roles": {"distance": "numeric", "error": "numeric"}, "pairing_requirement": "aggregate", "relationship_representation": "paired_observations"},
+            {"required_relationship": "distance -> error", "required_data_roles": ["distance", "error"], "roles": {"distance": "numeric", "error": "numeric"}, "pairing_requirement": "paired", "relationship_representation": "paired_observations", "allowed_transformations": ["smooth"]},
+            {"required_relationship": "distance -> error", "required_data_roles": ["distance", "error", "rho"], "roles": {"distance": "numeric", "error": "numeric"}, "pairing_requirement": "paired", "relationship_representation": "paired_observations", "annotation_roles": ["rho"]},
+        ]
+        for control in controls:
+            with self.subTest(control=control):
+                candidate = copy.deepcopy(relationship)
+                candidate.update(control)
+                self.assertTrue(self.validator.is_valid(candidate))
+                with self.assertRaises(ContractError):
+                    validate_contract(candidate)
+        missing_pairing = copy.deepcopy(relationship)
+        missing_pairing.pop("pairing_requirement")
+        with self.assertRaises(ContractError):
+            validate_contract(missing_pairing)
+
+    def test_legacy_contract_without_relationship_semantics_remains_valid(self):
+        legacy = copy.deepcopy(self.chinese)
+        self.check_agreement(legacy, True)
+
     def test_unknown_and_invalid_fields_fail_closed(self):
         controls = [{"unknown": "未知"}, {"title": "not consumed by runtime"},
                     {"labels": {"x": 12}}, {"units": {"x": None}}, {"roles": []},

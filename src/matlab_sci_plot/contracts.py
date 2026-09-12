@@ -24,6 +24,105 @@ class ContractError(ValueError):
     """Raised when a contract is missing, malformed, or unsupported."""
 
 
+RELATIONSHIP_SEMANTICS = {
+    "distance_to_error": {"x_role": "distance", "y_role": "error"},
+}
+RELATIONSHIP_ALIASES = {
+    "distance -> error": "distance_to_error",
+    "distance->error": "distance_to_error",
+    "distance_to_error": "distance_to_error",
+}
+SUPPORTED_RELATIONSHIP_TRANSFORMATIONS = {"none", "identity"}
+
+
+def relationship_spec(value: Any) -> dict[str, str]:
+    """Return the canonical governed relationship identity or fail closed."""
+    if isinstance(value, str):
+        identifier = RELATIONSHIP_ALIASES.get(value.strip().lower())
+        if identifier is None:
+            raise ContractError(f"UNKNOWN_RELATIONSHIP_SEMANTICS: {value}")
+        roles = RELATIONSHIP_SEMANTICS[identifier]
+        return {"id": identifier, **roles}
+    if isinstance(value, Mapping):
+        identifier = value.get("id")
+        if identifier not in RELATIONSHIP_SEMANTICS:
+            raise ContractError(f"UNKNOWN_RELATIONSHIP_SEMANTICS: {identifier}")
+        roles = RELATIONSHIP_SEMANTICS[identifier]
+        if value.get("x_role") != roles["x_role"] or value.get("y_role") != roles["y_role"]:
+            raise ContractError("RELATIONSHIP_ROLE_IDENTITY_MISMATCH")
+        return {"id": identifier, **roles}
+    raise ContractError("required_relationship must be a governed relationship identity")
+
+
+def minimum_observations(value: Any) -> int:
+    """Read the additive minimum-data form shared by Python and provider adapters."""
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, Mapping) and isinstance(value.get("observations"), int) and not isinstance(value.get("observations"), bool):
+        return value["observations"]
+    raise ContractError("minimum_data_requirement must declare observations")
+
+
+def validate_relationship_semantics(payload: Mapping[str, Any]) -> dict[str, Any] | None:
+    """Validate explicitly declared relationship authority without affecting legacy contracts."""
+    relationship = payload.get("required_relationship")
+    semantic_fields = ("required_data_roles", "pairing_requirement", "relationship_representation",
+                       "minimum_data_requirement", "allowed_transformations", "annotation_roles")
+    if relationship is None:
+        present = [field for field in semantic_fields if field in payload]
+        if present:
+            raise ContractError("RELATIONSHIP_SEMANTICS_REQUIRE_REQUIRED_RELATIONSHIP")
+        return None
+
+    spec = relationship_spec(relationship)
+    required_roles = payload.get("required_data_roles")
+    if not isinstance(required_roles, list) or not required_roles or not all(isinstance(role, str) for role in required_roles):
+        raise ContractError("RELATIONSHIP_REQUIRED_DATA_ROLES_MISSING")
+    missing_roles = [role for role in (spec["x_role"], spec["y_role"]) if role not in required_roles]
+    if missing_roles:
+        raise ContractError(f"RELATIONSHIP_REQUIRED_DATA_ROLES_MISSING: {','.join(missing_roles)}")
+    bindings = payload.get("roles", {})
+    bound_tokens = set(bindings) | set(bindings.values()) if isinstance(bindings, Mapping) else set()
+    unbound_roles = [role for role in required_roles if role not in bound_tokens]
+    if unbound_roles:
+        raise ContractError(f"RELATIONSHIP_ROLE_BINDING_MISSING: {','.join(unbound_roles)}")
+
+    pairing = payload.get("pairing_requirement")
+    if pairing not in {"paired", "aggregate"}:
+        raise ContractError("RELATIONSHIP_PAIRING_REQUIREMENT_MISSING")
+    representation = payload.get("relationship_representation")
+    expected = "paired_observations" if pairing == "paired" else "authorized_aggregate"
+    if representation != expected:
+        raise ContractError("RELATIONSHIP_REPRESENTATION_NOT_AUTHORIZED")
+
+    if "minimum_data_requirement" in payload:
+        minimum = minimum_observations(payload["minimum_data_requirement"])
+        if minimum < 1:
+            raise ContractError("RELATIONSHIP_MINIMUM_DATA_INVALID")
+        requirement = payload["minimum_data_requirement"]
+        if isinstance(requirement, Mapping):
+            scoped_roles = requirement.get("roles", [])
+            if any(role not in required_roles for role in scoped_roles):
+                raise ContractError("RELATIONSHIP_MINIMUM_DATA_ROLES_INVALID")
+
+    transformations = payload.get("allowed_transformations", [])
+    if not isinstance(transformations, list) or not all(isinstance(item, str) for item in transformations):
+        raise ContractError("RELATIONSHIP_ALLOWED_TRANSFORMATIONS_INVALID")
+    unknown_transformations = [item for item in transformations if item not in SUPPORTED_RELATIONSHIP_TRANSFORMATIONS]
+    if unknown_transformations:
+        raise ContractError(f"UNAUTHORIZED_RELATIONSHIP_TRANSFORMATION: {unknown_transformations[0]}")
+
+    annotations = payload.get("annotation_roles", [])
+    if not isinstance(annotations, list) or not all(isinstance(item, str) for item in annotations):
+        raise ContractError("RELATIONSHIP_ANNOTATION_ROLES_INVALID")
+    if set(annotations).intersection(required_roles):
+        raise ContractError("RELATIONSHIP_ANNOTATION_ROLE_OVERLAP")
+    return {"relationship": spec, "required_data_roles": list(required_roles),
+            "pairing_requirement": pairing, "relationship_representation": representation,
+            "minimum_observations": minimum_observations(payload["minimum_data_requirement"]) if "minimum_data_requirement" in payload else 1,
+            "allowed_transformations": list(transformations), "annotation_roles": list(annotations)}
+
+
 @lru_cache(maxsize=None)
 def _schema(name: str) -> dict[str, Any]:
     path = Path(__file__).parents[2] / "schemas" / f"{name}.schema.json"
@@ -146,6 +245,9 @@ def validate_contract(payload: Mapping[str, Any], expected_type: str | None = No
     if ctype == "figure_contract":
         schema = _schema("figure_contract")
         _validate_schema(payload, schema, schema)
+        validate_relationship_semantics(payload)
+    if ctype == "figure_plan":
+        validate_relationship_semantics(payload)
     if ctype == "figure_evidence":
         schema = _schema("evidence_manifest")
         _validate_schema(payload, schema, schema)
