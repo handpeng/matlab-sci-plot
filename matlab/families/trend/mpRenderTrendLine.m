@@ -1,6 +1,6 @@
-function mpRenderTrendLine(contract, ~, style, data, ax)
-if ~isfield(data,'x') || ~isfield(data,'y'), error('matlab_sci_plot:MissingBinding','x and y are required.'); end
-x = data.x(:); y = data.y;
+function mpRenderTrendLine(contract, plan, style, data, ax)
+[x, y] = mpRelationshipValues(plan, data);
+x = x(:); if isvector(y), y = y(:); end
 if size(y,1) ~= numel(x), error('matlab_sci_plot:MissingBinding','Each trend series must align with x.'); end
 [x, order] = sort(x); y = y(order,:);
 colors = [0 114 178; 230 159 0; 0 158 115; 213 94 0; 204 121 167]/255;

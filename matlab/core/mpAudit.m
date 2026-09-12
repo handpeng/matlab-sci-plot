@@ -1,6 +1,7 @@
 function findings = mpAudit(contract)
 % Scientific audit entry point; governed integrity failures fail closed.
 findings = struct('code', {}, 'severity', {}, 'message', {});
+findings = [findings, auditRelationship(contract)]; %#ok<AGROW>
 uncertaintyRequested = isfield(contract, 'uncertainty_requested') && contract.uncertainty_requested;
 if isfield(contract, 'requested_layers') && isstruct(contract.requested_layers) && ...
         isfield(contract.requested_layers, 'uncertainty')
@@ -73,4 +74,101 @@ present = isfield(contract, 'n') || isfield(contract, 'n_common') || isfield(con
 if ~present && isfield(contract, 'claim') && isstruct(contract.claim)
     present = isfield(contract.claim, 'n') || isfield(contract.claim, 'n_common') || isfield(contract.claim, 'n_by_model');
 end
+end
+
+function findings = auditRelationship(contract)
+findings = struct('code', {}, 'severity', {}, 'message', {});
+semanticFields = {'required_data_roles','pairing_requirement','relationship_representation', ...
+    'minimum_data_requirement','allowed_transformations','annotation_roles'};
+hasRelationship = isfield(contract,'required_relationship');
+if ~hasRelationship
+    for i = 1:numel(semanticFields)
+        if isfield(contract,semanticFields{i})
+            findings(end+1) = relationshipFinding('RELATIONSHIP_SEMANTICS_REQUIRE_REQUIRED_RELATIONSHIP', ...
+                'Relationship semantic fields require required_relationship.'); %#ok<AGROW>
+            return;
+        end
+    end
+    return;
+end
+[relationshipId, xRole, yRole, validIdentity] = relationshipIdentity(contract.required_relationship);
+if ~validIdentity
+    findings(end+1) = relationshipFinding('UNKNOWN_RELATIONSHIP_SEMANTICS', 'The required relationship identity is not governed.'); %#ok<AGROW>
+    return;
+end
+if ~isfield(contract,'required_data_roles') || isempty(contract.required_data_roles)
+    findings(end+1) = relationshipFinding('RELATIONSHIP_REQUIRED_DATA_ROLES_MISSING', 'Required relationship roles are missing.'); %#ok<AGROW>
+    return;
+end
+requiredRoles = cellstr(string(contract.required_data_roles));
+if ~all(ismember({xRole,yRole},requiredRoles))
+    findings(end+1) = relationshipFinding('RELATIONSHIP_REQUIRED_DATA_ROLES_MISSING', ...
+        sprintf('Relationship %s requires %s and %s roles.',relationshipId,xRole,yRole)); %#ok<AGROW>
+end
+if ~isfield(contract,'roles') || ~isstruct(contract.roles)
+    findings(end+1) = relationshipFinding('RELATIONSHIP_ROLE_BINDING_MISSING', 'Required relationship roles are not bound.'); %#ok<AGROW>
+else
+    bindingNames = fieldnames(contract.roles);
+    bindingValues = cellstr(string(struct2cell(contract.roles)));
+    tokens = [bindingNames; bindingValues];
+    if ~all(ismember(requiredRoles,tokens))
+        findings(end+1) = relationshipFinding('RELATIONSHIP_ROLE_BINDING_MISSING', 'A required relationship role has no provider binding.'); %#ok<AGROW>
+    end
+end
+if ~isfield(contract,'pairing_requirement') || ~any(strcmp(char(string(contract.pairing_requirement)),{'paired','aggregate'}))
+    findings(end+1) = relationshipFinding('RELATIONSHIP_PAIRING_REQUIREMENT_MISSING', 'Pairing requirement is missing or unsupported.'); %#ok<AGROW>
+else
+    pairing = char(string(contract.pairing_requirement));
+    expected = 'paired_observations';
+    if strcmp(pairing,'aggregate'), expected = 'authorized_aggregate'; end
+    if ~isfield(contract,'relationship_representation') || ~strcmp(char(string(contract.relationship_representation)),expected)
+        findings(end+1) = relationshipFinding('RELATIONSHIP_REPRESENTATION_NOT_AUTHORIZED', 'Relationship representation does not match its pairing declaration.'); %#ok<AGROW>
+    end
+end
+if isfield(contract,'minimum_data_requirement')
+    minimum = relationshipMinimum(contract.minimum_data_requirement);
+    if isempty(minimum) || minimum < 1
+        findings(end+1) = relationshipFinding('RELATIONSHIP_MINIMUM_DATA_INVALID', 'Minimum relationship observations must be positive.'); %#ok<AGROW>
+    end
+end
+if isfield(contract,'allowed_transformations')
+    transformations = cellstr(string(contract.allowed_transformations));
+    if any(~ismember(transformations,{'none','identity'}))
+        findings(end+1) = relationshipFinding('UNAUTHORIZED_RELATIONSHIP_TRANSFORMATION', 'The relationship renderer supports no non-identity transformation.'); %#ok<AGROW>
+    end
+end
+if isfield(contract,'annotation_roles')
+    annotations = cellstr(string(contract.annotation_roles));
+    if any(ismember(annotations,requiredRoles))
+        findings(end+1) = relationshipFinding('RELATIONSHIP_ANNOTATION_ROLE_OVERLAP', 'Annotation roles cannot be required relationship roles.'); %#ok<AGROW>
+    end
+end
+end
+
+function [identifier, xRole, yRole, valid] = relationshipIdentity(value)
+identifier = ''; xRole = ''; yRole = ''; valid = false;
+if isstruct(value)
+    if ~isfield(value,'id'), return; end
+    identifier = char(string(value.id));
+    if isfield(value,'x_role'), xRole = char(string(value.x_role)); end
+    if isfield(value,'y_role'), yRole = char(string(value.y_role)); end
+else
+    identifier = lower(strtrim(char(string(value))));
+end
+if any(strcmp(identifier,{'distance -> error','distance->error','distance_to_error'}))
+    identifier = 'distance_to_error'; xRole = 'distance'; yRole = 'error'; valid = true;
+end
+if isstruct(value) && (~strcmp(xRole,'distance') || ~strcmp(yRole,'error')), valid = false; end
+end
+
+function minimum = relationshipMinimum(value)
+minimum = [];
+if isnumeric(value) && isscalar(value), minimum = value; return; end
+if isstruct(value) && isfield(value,'observations') && isnumeric(value.observations) && isscalar(value.observations)
+    minimum = value.observations;
+end
+end
+
+function finding = relationshipFinding(code, message)
+finding = struct('code',code,'severity','error','message',message);
 end

@@ -14,6 +14,7 @@
     "scientific_intent": {"type": "string"},
     "required_relationship": {"type": ["string", "object"]},
     "required_data_roles": {"type": "array", "items": {"type": "string"}},
+    "relationship_bindings": {"type": "object", "additionalProperties": {"type": "string"}},
     "pairing_requirement": {"enum": ["paired", "aggregate"]},
     "relationship_representation": {"enum": ["paired_observations", "authorized_aggregate"]},
     "minimum_data_requirement": {"type": ["integer", "object"]},

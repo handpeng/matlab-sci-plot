@@ -1,4 +1,4 @@
-function manifest = mpWriteEvidence(contract, plan, review, outputs, outputDir, runtimeTypography)
+function manifest = mpWriteEvidence(contract, plan, review, outputs, outputDir, runtimeTypography, relationshipData)
 % Bind a real MATLAB-rendered artifact to review/provenance evidence.
 if nargin < 5, outputDir = pwd; end
 if ~mpReviewAccepted(review)
@@ -6,6 +6,25 @@ if ~mpReviewAccepted(review)
 end
 if ~isfield(plan, 'contract_version') || ~strcmp(char(string(plan.contract_version)), '1.0')
     error('matlab_sci_plot:UnsupportedPlan','Unsupported Figure Plan version.');
+end
+if isfield(contract,'required_relationship')
+    if nargin < 7
+        error('matlab_sci_plot:RelationshipGate','Relationship evidence requires validated relationship data.');
+    end
+    mpValidateRelationshipData(contract,plan,relationshipData);
+elseif isfield(contract,'panels') && ~isempty(contract.panels) && isfield(plan,'panels') && ~isempty(plan.panels)
+    if nargin < 7 || ~isstruct(relationshipData) || ~isfield(relationshipData,'panels')
+        error('matlab_sci_plot:RelationshipGate','Composite relationship evidence requires panel data.');
+    end
+    panelContracts = normalizeItems(contract.panels);
+    panelPlans = normalizeItems(plan.panels);
+    panelData = normalizeItems(relationshipData.panels);
+    if numel(panelContracts) ~= numel(panelPlans) || numel(panelPlans) ~= numel(panelData)
+        error('matlab_sci_plot:PanelMismatch','Panel evidence data counts must match.');
+    end
+    for i = 1:numel(panelContracts)
+        mpValidateRelationshipData(panelContracts{i},panelPlans{i},panelData{i});
+    end
 end
 if nargin >= 6
     % Check internal policy consistency; this does not establish glyph coverage.
@@ -49,6 +68,10 @@ fidReview = fopen(fullfile(outputDir,'figure_review.json'),'w','n','UTF-8');
 if fidReview == -1, error('matlab_sci_plot:EvidenceWriteFailed','Cannot open review output.'); end
 cleanupReview = onCleanup(@() fclose(fidReview));
 fprintf(fidReview, '%s', jsonencode(review));
+end
+
+function items = normalizeItems(value)
+if iscell(value), items = value; else, items = arrayfun(@(item) item, value, 'UniformOutput', false); end
 end
 
 function identities = rendererIdentity(plan)

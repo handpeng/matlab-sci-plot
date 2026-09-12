@@ -2,19 +2,28 @@ function result = mpRenderFigure(contract, plan, style, data, outputDir, review,
 % Native MATLAB rendering boundary: plan -> tiledlayout -> family -> audit -> export.
 if nargin < 5, outputDir = pwd; end
 if ~strcmp(plan.backend_id, 'matlab'), error('matlab_sci_plot:BackendMismatch', 'V1 production backend is MATLAB.'); end
+if isfield(plan, 'panels') && ~isempty(plan.panels)
+    panelPlans = normalizeItems(plan.panels);
+    panelContracts = normalizeItems(contract.panels);
+    if ~isstruct(data) || ~isfield(data, 'panels')
+        error('matlab_sci_plot:MissingBinding', 'Composite rendering requires data.panels.');
+    end
+    panelData = normalizeItems(data.panels);
+    if numel(panelPlans) ~= numel(panelContracts) || numel(panelPlans) ~= numel(panelData)
+        error('matlab_sci_plot:PanelMismatch', 'Panel plan, contract, and data counts must match.');
+    end
+    for i = 1:numel(panelPlans)
+        mpValidateRelationshipData(panelContracts{i}, panelPlans{i}, panelData{i});
+    end
+else
+    mpValidateRelationshipData(contract, plan, data);
+end
 fig = createFigure(style);
 figureCleanup = onCleanup(@() closeIfValid(fig));
 layout = mpBuildLayout(plan);
 t = tiledlayout(fig, layout.rows, layout.columns, 'Padding','compact', 'TileSpacing','compact');
 findings = mpAudit(contract);
 if isfield(plan, 'panels') && ~isempty(plan.panels)
-    panelPlans = normalizeItems(plan.panels);
-    panelContracts = normalizeItems(contract.panels);
-    if ~isfield(data, 'panels'), close(fig); error('matlab_sci_plot:MissingBinding', 'Composite rendering requires data.panels.'); end
-    panelData = normalizeItems(data.panels);
-    if numel(panelPlans) ~= numel(panelContracts) || numel(panelPlans) ~= numel(panelData)
-        close(fig); error('matlab_sci_plot:PanelMismatch', 'Panel plan, contract, and data counts must match.');
-    end
     for i = 1:numel(panelPlans)
         ax = nextPanelTile(t, layout, i, numel(panelPlans));
         renderer = str2func(panelPlans{i}.renderer_entrypoint);
@@ -52,7 +61,7 @@ end
 mpExport(fig, string(pngPath), Format="png", Resolution=300);
 mpExport(fig, string(pdfPath), Format="pdf");
 if nargin >= 6 && ~isempty(review)
-    manifest = mpWriteEvidence(contract, plan, review, {pngPath, pdfPath}, outputDir, typography);
+    manifest = mpWriteEvidence(contract, plan, review, {pngPath, pdfPath}, outputDir, typography, data);
 else
     manifest = struct();
 end

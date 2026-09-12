@@ -39,14 +39,14 @@ def apply_repairs(plan: Mapping[str, Any], repairs: list[Mapping[str, Any]]) -> 
     return result
 
 
-def export_evidence(plan: Mapping[str, Any], review: Mapping[str, Any], output_dir: str | Path, *, source_data: Mapping[str, Any] | None = None, skill_version: str = "1.2.0") -> dict[str, Any]:
+def export_evidence(plan: Mapping[str, Any], review: Mapping[str, Any], output_dir: str | Path, *, source_data: Mapping[str, Any] | None = None, relationship_data: Mapping[str, Any] | None = None, skill_version: str = "1.2.0") -> dict[str, Any]:
     checked_plan = validate_contract(plan, "figure_plan")
     checked_review = validate_contract(review, "figure_review")
     if checked_review["scientific_correctness"] != "PASS" or checked_review["verdict"] != "accept":
         raise PermissionError("final export is blocked until scientific correctness passes and review is accepted")
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    artifact = render_synthetic(checked_plan, output_dir / "figure_preview.svg")
+    artifact = render_synthetic(checked_plan, output_dir / "figure_preview.svg", relationship_data)
     digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
     manifest = {"manifest_type": "figure_evidence", "manifest_version": "1.0", "skill_version": skill_version, "contract_versions": {"figure_plan": checked_plan["contract_version"], "figure_review": checked_review["record_version"]}, "source_data": dict(source_data or {}), "matlab_version": None, "style_profile": checked_plan["style_id"], "final_dimensions": checked_plan.get("final_size", {}), "palette": checked_plan.get("palette", {}), "transformations": [], "exclusions": [], "uncertainty": None, "selected_candidate": checked_plan.get("family_id"), "review_result": checked_review, "outputs": [{"path": str(artifact.name), "sha256": digest}]}
     manifest = validate_contract(manifest, "figure_evidence")

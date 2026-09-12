@@ -12,6 +12,7 @@ if ~strcmp(contract.contract_type, 'figure_contract') || ~strcmp(contract.contra
     error('matlab_sci_plot:UnsupportedContract', 'Figure Contract must use supported version 1.0.');
 end
 failOnAuditErrors(mpAudit(contract));
+[relationshipId, relationshipRoles, pairingRequirement, relationshipRepresentation] = relationshipRequirements(contract);
 if isfield(contract, 'panels') && ~isempty(contract.panels)
     panelContracts = normalizeItems(contract.panels);
     panelPlans = cell(1, numel(panelContracts));
@@ -46,9 +47,21 @@ for i = 1:numel(registry)
     hasNativeRenderer = ~strcmp(registry(i).matlab_renderer, 'mpRenderUnsupportedFamily');
     compatible = any(strcmp(tasks, task)) && strcmp(registry(i).renderer_backend, backend) && ...
         hasNativeRenderer && all(ismember(requiredRoles, roles));
+    if compatible && ~isempty(relationshipId)
+        compatible = any(strcmp(registry(i).supported_relationships, relationshipId)) && ...
+            all(ismember(relationshipRoles, registry(i).supported_relationship_roles)) && ...
+            any(strcmp(registry(i).supported_pairing_requirements, pairingRequirement)) && ...
+            any(strcmp(registry(i).supported_relationship_representations, relationshipRepresentation));
+    end
     if compatible, scores(end+1) = i; end %#ok<AGROW>
 end
-if isempty(scores), error('matlab_sci_plot:NoCompatibleFamily', 'No family is compatible with task and roles.'); end
+if isempty(scores)
+    if ~isempty(relationshipId)
+        error('matlab_sci_plot:INCOMPATIBLE_RELATIONSHIP_FAMILY', ...
+            'No family supports relationship %s with the declared task and representation.',relationshipId);
+    end
+    error('matlab_sci_plot:NoCompatibleFamily', 'No family is compatible with task and roles.');
+end
 family = registry(scores(1));
 manifest = mpReadJson(fullfile(rootDir, 'manifests', 'families', [family.id '.json']));
 layouts = cellstr(string(manifest.recommended_layout_primitives));
@@ -66,6 +79,17 @@ if isfield(contract, 'target_profile'), plan.style_id = char(string(contract.tar
 if isfield(contract, 'panel_count'), plan.panel_count = contract.panel_count; end
 if isfield(contract, 'scale_policy'), plan.scale_policy = char(string(contract.scale_policy)); end
 if isfield(contract, 'final_size'), plan.final_size = contract.final_size; end
+if ~isempty(relationshipId)
+    plan.required_relationship = contract.required_relationship;
+    plan.required_data_roles = contract.required_data_roles;
+    plan.pairing_requirement = contract.pairing_requirement;
+    plan.relationship_representation = contract.relationship_representation;
+    plan.relationship_bindings = relationshipBindings(contract,relationshipRoles);
+    if isfield(contract,'scientific_intent'), plan.scientific_intent = contract.scientific_intent; end
+    if isfield(contract,'minimum_data_requirement'), plan.minimum_data_requirement = contract.minimum_data_requirement; end
+    if isfield(contract,'allowed_transformations'), plan.allowed_transformations = contract.allowed_transformations; end
+    if isfield(contract,'annotation_roles'), plan.annotation_roles = contract.annotation_roles; end
+end
 end
 
 function items = normalizeItems(value)
@@ -81,5 +105,39 @@ for i = 1:numel(findings)
     if strcmp(findings(i).severity, 'error')
         error('matlab_sci_plot:ScientificAudit', '%s: %s', findings(i).code, findings(i).message);
     end
+end
+end
+
+function [identifier, roles, pairing, representation] = relationshipRequirements(contract)
+identifier = ''; roles = {}; pairing = ''; representation = '';
+if ~isfield(contract,'required_relationship'), return; end
+value = contract.required_relationship;
+if isstruct(value)
+    identifier = char(string(value.id));
+else
+    identifier = lower(strtrim(char(string(value))));
+end
+if any(strcmp(identifier,{'distance -> error','distance->error','distance_to_error'})), identifier = 'distance_to_error'; end
+if isfield(contract,'required_data_roles'), roles = cellstr(string(contract.required_data_roles)); end
+if isfield(contract,'pairing_requirement'), pairing = char(string(contract.pairing_requirement)); end
+if isfield(contract,'relationship_representation'), representation = char(string(contract.relationship_representation)); end
+end
+
+function bindings = relationshipBindings(contract, requiredRoles)
+bindings = struct();
+if ~isfield(contract,'roles') || ~isstruct(contract.roles)
+    error('matlab_sci_plot:RELATIONSHIP_ROLE_BINDING_MISSING','Required relationship roles are not bound.');
+end
+fields = fieldnames(contract.roles);
+values = cellstr(string(struct2cell(contract.roles)));
+for i = 1:numel(requiredRoles)
+    role = requiredRoles{i}; matches = {};
+    if isfield(contract.roles,role), matches{end+1} = role; end %#ok<AGROW>
+    matches = [matches; fields(strcmp(values,role))]; %#ok<AGROW>
+    matches = unique(matches,'stable');
+    if numel(matches) ~= 1
+        error('matlab_sci_plot:RELATIONSHIP_ROLE_BINDING_MISSING','Expected one binding for role %s.',role);
+    end
+    bindings.(role) = matches{1};
 end
 end

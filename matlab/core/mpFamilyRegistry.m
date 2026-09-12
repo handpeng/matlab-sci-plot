@@ -6,7 +6,9 @@ end
 manifestDir = fullfile(rootDir, 'manifests', 'families');
 files = dir(fullfile(manifestDir, '*.json'));
 registry = struct('id', {}, 'manifest_version', {}, 'communication_tasks', {}, ...
-    'data_roles_required', {}, 'renderer_backend', {}, 'matlab_renderer', {}, 'status', {});
+    'data_roles_required', {}, 'renderer_backend', {}, 'matlab_renderer', {}, 'status', {}, ...
+    'supported_relationships', {}, 'supported_relationship_roles', {}, ...
+    'supported_pairing_requirements', {}, 'supported_relationship_representations', {});
 for i = 1:numel(files)
     payload = mpReadJson(fullfile(files(i).folder, files(i).name));
     if ~isfield(payload, 'manifest_version') || startsWith(string(payload.manifest_version), '2.')
@@ -24,6 +26,15 @@ for i = 1:numel(files)
         entry.matlab_renderer = 'mpRenderUnsupportedFamily';
     end
     entry.status = char(string(payload.status));
+    entry.supported_relationships = optionalStrings(payload,'supported_relationships');
+    entry.supported_relationship_roles = optionalStrings(payload,'supported_relationship_roles');
+    entry.supported_pairing_requirements = optionalStrings(payload,'supported_pairing_requirements');
+    entry.supported_relationship_representations = optionalStrings(payload,'supported_relationship_representations');
     registry(end+1) = entry; %#ok<AGROW>
 end
+end
+
+function values = optionalStrings(payload, field)
+values = {};
+if isfield(payload,field), values = cellstr(string(payload.(field))); end
 end
