@@ -5,6 +5,7 @@ from pathlib import Path
 from src.matlab_sci_plot.families import plan_figure
 from src.matlab_sci_plot.review import apply_repairs, export_evidence, review_record
 from src.matlab_sci_plot.contracts import ContractError
+from src.matlab_sci_plot.data import RelationshipDataError
 
 
 def plan():
@@ -45,7 +46,7 @@ class ReviewTests(unittest.TestCase):
         }
         plan = plan_figure(relationship)
         with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(Exception, "INSUFFICIENT_RELATIONSHIP_DATA"):
+            with self.assertRaisesRegex(RelationshipDataError, "INSUFFICIENT_RELATIONSHIP_DATA"):
                 export_evidence(plan, review_record("accept", "PASS"), directory)
             self.assertFalse((Path(directory) / "figure_manifest.json").exists())
 
