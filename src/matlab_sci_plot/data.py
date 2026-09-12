@@ -5,8 +5,19 @@ from __future__ import annotations
 import csv
 import math
 from pathlib import Path
+from collections.abc import Mapping, Sequence
 from statistics import mean, median
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Iterable
+
+from .contracts import ContractError, validate_relationship_semantics
+
+
+class RelationshipDataError(ContractError):
+    """Stable fail-closed diagnostic for insufficient relationship observations."""
+
+    def __init__(self, code: str, detail: str):
+        self.code = code
+        super().__init__(f"{code}: {detail}")
 
 
 def read_table(path: str | Path) -> list[dict[str, Any]]:
@@ -55,6 +66,98 @@ def infer_roles(rows: Sequence[Mapping[str, Any]], explicit: Mapping[str, str] |
         if metadata["unique_n"] == metadata["n"] and metadata["n"] > 1:
             roles["identifier"].append(column)
     return roles
+
+
+def relationship_role_bindings(contract: Mapping[str, Any]) -> dict[str, str]:
+    """Resolve each required semantic role to one provider data field."""
+    semantics = validate_relationship_semantics(contract)
+    if semantics is None:
+        return {}
+    explicit_bindings = contract.get("relationship_bindings")
+    declared = explicit_bindings or contract.get("roles", {})
+    if not isinstance(declared, Mapping):
+        raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", "relationship role bindings are not an object")
+    resolved: dict[str, str] = {}
+    for role in semantics["required_data_roles"]:
+        candidates = []
+        if explicit_bindings is not None and role in declared and isinstance(declared[role], str):
+            candidates.append(declared[role])
+        else:
+            if role in declared and isinstance(declared[role], str):
+                candidates.append(role)
+            candidates.extend(key for key, value in declared.items() if value == role and key not in candidates)
+        if len(candidates) != 1:
+            code = "MISSING_RELATIONSHIP_ROLE" if not candidates else "AMBIGUOUS_RELATIONSHIP_ROLE"
+            raise RelationshipDataError(code, role)
+        resolved[role] = candidates[0]
+    return resolved
+
+
+def _sequence_values(value: Any, role: str) -> list[Any]:
+    if isinstance(value, (str, bytes, Mapping)) or not isinstance(value, Sequence):
+        raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", f"{role} is not an observation sequence")
+    return list(value)
+
+
+def _require_finite_numeric(values: Sequence[Any], role: str) -> None:
+    for index, value in enumerate(values):
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError) as exc:
+            raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", f"{role}[{index}] is not numeric") from exc
+        if not math.isfinite(numeric):
+            raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", f"{role}[{index}] is not finite")
+
+
+def _scalar_value(value: Any, role: str) -> Any:
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        values = list(value)
+        if len(values) != 1:
+            raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", f"aggregate {role} must be one explicit value")
+        value = values[0]
+    if isinstance(value, Mapping):
+        raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", f"aggregate {role} is not scalar")
+    _require_finite_numeric([value], role)
+    return value
+
+
+def validate_relationship_data(contract: Mapping[str, Any], data: Mapping[str, Any] | None, *, family_id: str | None = None) -> dict[str, Any] | None:
+    """Validate supplied relationship observations without filtering or recomputing them."""
+    semantics = validate_relationship_semantics(contract)
+    if semantics is None:
+        return None
+    if not isinstance(data, Mapping):
+        raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", "relationship data were not supplied")
+    bindings = relationship_role_bindings(contract)
+    missing = [field for field in bindings.values() if field not in data]
+    if missing:
+        raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", f"missing bound fields: {','.join(missing)}")
+
+    roles = semantics["required_data_roles"]
+    x_role = semantics["relationship"]["x_role"]
+    y_role = semantics["relationship"]["y_role"]
+    minimum = semantics["minimum_observations"]
+    if semantics["pairing_requirement"] == "paired":
+        x_values = _sequence_values(data[bindings[x_role]], x_role)
+        y_values = _sequence_values(data[bindings[y_role]], y_role)
+        if len(x_values) != len(y_values):
+            raise RelationshipDataError("RELATIONSHIP_PAIRING_LENGTH_MISMATCH", f"{x_role}={len(x_values)} {y_role}={len(y_values)}")
+        if len(x_values) < minimum:
+            raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", f"observations={len(x_values)} minimum={minimum}")
+        _require_finite_numeric(x_values, x_role)
+        _require_finite_numeric(y_values, y_role)
+        return {"representation": "paired_observations", "x_role": x_role, "y_role": y_role,
+                "x": x_values, "y": y_values, "required_roles": list(roles),
+                "bindings": bindings}
+
+    if family_id is not None and family_id != "relationship.scatter":
+        raise RelationshipDataError("INCOMPATIBLE_RELATIONSHIP_FAMILY", family_id)
+    if minimum > 1:
+        raise RelationshipDataError("INSUFFICIENT_RELATIONSHIP_DATA", "authorized aggregate has fewer observations than declared minimum")
+    x_value = _scalar_value(data[bindings[x_role]], x_role)
+    y_value = _scalar_value(data[bindings[y_role]], y_role)
+    return {"representation": "authorized_aggregate", "x_role": x_role, "y_role": y_role,
+            "x": x_value, "y": y_value, "required_roles": list(roles), "bindings": bindings}
 
 
 def common_valid_mask(truth: Sequence[Any], predictions: Mapping[str, Sequence[Any]]) -> list[bool]:

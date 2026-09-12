@@ -81,7 +81,7 @@ def validate_relationship_semantics(payload: Mapping[str, Any]) -> dict[str, Any
     missing_roles = [role for role in (spec["x_role"], spec["y_role"]) if role not in required_roles]
     if missing_roles:
         raise ContractError(f"RELATIONSHIP_REQUIRED_DATA_ROLES_MISSING: {','.join(missing_roles)}")
-    bindings = payload.get("roles", {})
+    bindings = payload.get("roles", payload.get("relationship_bindings", {}))
     bound_tokens = set(bindings) | set(bindings.values()) if isinstance(bindings, Mapping) else set()
     unbound_roles = [role for role in required_roles if role not in bound_tokens]
     if unbound_roles:

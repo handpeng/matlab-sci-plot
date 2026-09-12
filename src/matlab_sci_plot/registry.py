@@ -54,16 +54,30 @@ class Registry:
             self._renderers[identifier] = getattr(module, function_name)
         return self._renderers[identifier]
 
-    def compatible(self, roles: set[str], task: str, backend: str = "matlab") -> list[dict[str, Any]]:
+    def compatible(self, roles: set[str], task: str, backend: str = "matlab", *, relationship: str | None = None,
+                   required_data_roles: set[str] | None = None, pairing_requirement: str | None = None,
+                   relationship_representation: str | None = None) -> list[dict[str, Any]]:
         candidates = []
         for entry in self._entries.values():
             if task not in entry["communication_tasks"]:
                 continue
+            if relationship is not None:
+                if relationship not in entry.get("supported_relationships", []):
+                    continue
+                if required_data_roles and not required_data_roles.issubset(set(entry.get("supported_relationship_roles", []))):
+                    continue
+                if pairing_requirement and pairing_requirement not in entry.get("supported_pairing_requirements", []):
+                    continue
+                if relationship_representation and relationship_representation not in entry.get("supported_relationship_representations", []):
+                    continue
             required = set(entry["data_roles_required"])
             if not required.issubset(roles):
                 continue
             if entry.get("renderer_backend", "matlab") != backend:
                 continue
             score = len(required.intersection(roles)) + (2 if entry.get("status") == "active" else 0)
-            candidates.append({"family_id": entry["id"], "score": score, "reason": "required roles and task compatible"})
+            reason = "required roles and task compatible"
+            if relationship is not None:
+                reason = "declared relationship, representation, roles, task, and backend compatible"
+            candidates.append({"family_id": entry["id"], "score": score, "reason": reason})
         return sorted(candidates, key=lambda item: (-item["score"], item["family_id"]))

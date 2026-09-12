@@ -17,6 +17,7 @@ class MatlabSurfaceTests(unittest.TestCase):
             "matlab/families/trend/mpRenderTrendLine.m", "matlab/families/explainability/mpRenderExplainability.m",
             "matlab/metallurgy/mpMetallurgyPattern.m",
             "matlab/tests/run_matlab_smoke.m", "matlab/tests/run_matlab_qualification.m",
+            "matlab/tests/run_matlab_relationship_smoke.m",
             "matlab/tests/run_matlab_typography_smoke.m",
             "matlab/tests/run_matlab_cjk_smoke.m", "matlab/tests/run_matlab_evidence_smoke.m",
         ]
@@ -61,6 +62,16 @@ class MatlabSurfaceTests(unittest.TestCase):
         self.assertIn("plan.panels", renderer)
         self.assertIn("mpReviewAccepted", renderer)
         self.assertIn("mpExport", renderer)
+
+    def test_relationship_native_surfaces_are_fail_closed(self):
+        root = Path(__file__).parents[1]
+        validator = (root / "matlab/core/mpValidateRelationshipData.m").read_text(encoding="utf-8")
+        planner = (root / "matlab/core/mpPlanFigure.m").read_text(encoding="utf-8")
+        smoke = (root / "matlab/tests/run_matlab_relationship_smoke.m").read_text(encoding="utf-8")
+        for code in ["INSUFFICIENT_RELATIONSHIP_DATA", "RELATIONSHIP_PAIRING_LENGTH_MISMATCH", "INCOMPATIBLE_RELATIONSHIP_FAMILY"]:
+            self.assertIn(code, validator + planner + smoke)
+        self.assertIn("relationship_bindings", planner)
+        self.assertIn("annotation_roles", smoke)
 
 
 if __name__ == "__main__":

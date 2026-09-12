@@ -23,6 +23,10 @@
     "matlab_renderer": {"type": "string"},
     "renderer_entrypoint": {"type": "string"},
     "capabilities": {"type": "array", "items": {"type": "string"}},
+    "supported_relationships": {"type": "array", "items": {"type": "string"}},
+    "supported_relationship_roles": {"type": "array", "items": {"type": "string"}},
+    "supported_pairing_requirements": {"type": "array", "items": {"type": "string"}},
+    "supported_relationship_representations": {"type": "array", "items": {"type": "string"}},
     "status": {"enum": ["active", "extension", "deprecated"]}
   },
   "additionalProperties": false

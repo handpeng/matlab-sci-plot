@@ -2,10 +2,27 @@ import math
 import unittest
 
 from src.matlab_sci_plot.audit import audit_contract, require_class_c_authority
-from src.matlab_sci_plot.data import common_valid_mask, infer_roles, r2, summary
+from src.matlab_sci_plot.data import (RelationshipDataError, common_valid_mask, infer_roles, r2, summary,
+                                      validate_relationship_data)
+from src.matlab_sci_plot.contracts import validate_contract
 
 
 class DataIntegrityTests(unittest.TestCase):
+    @staticmethod
+    def relationship_contract(**overrides):
+        contract = {
+            "contract_type": "figure_contract", "contract_version": "1.0",
+            "purpose": "relationship validation", "claim": {"primary": "distance and error are related"},
+            "data_bindings": {"distance": "synthetic", "error": "synthetic"},
+            "roles": {"distance": "numeric", "error": "numeric", "rho": "numeric", "p": "numeric", "n": "numeric"},
+            "communication_task": "relationship", "required_relationship": "distance -> error",
+            "required_data_roles": ["distance", "error"], "pairing_requirement": "paired",
+            "relationship_representation": "paired_observations", "annotation_roles": ["rho", "p", "n"],
+            "provenance": {"source_id": "synthetic-relationship"},
+        }
+        contract.update(overrides)
+        return contract
+
     def test_common_mask_and_negative_r2(self):
         truth = [0.0, 1.0, 2.0, 3.0]
         predictions = {"good": [0.0, 1.0, 2.0, 3.0], "bad": [3.0, 2.0, 1.0, 0.0]}
@@ -35,6 +52,47 @@ class DataIntegrityTests(unittest.TestCase):
         self.assertIn("UNIT_UNDECLARED", codes)
         with self.assertRaises(PermissionError):
             require_class_c_authority({}, "fit_regression")
+
+    def test_relationship_data_is_paired_and_annotations_do_not_substitute(self):
+        contract = self.relationship_contract()
+        validate_contract(contract)
+        data = {"distance": [-3.0, 0.0, 4.0], "error": [-2.0, 1.0, 5.0], "rho": -0.4, "p": 0.2, "n": 3}
+        result = validate_relationship_data(contract, data)
+        self.assertEqual(result["x"], data["distance"])
+        self.assertEqual(result["y"], data["error"])
+        self.assertEqual(result["representation"], "paired_observations")
+
+        summary_only = {key: data[key] for key in ("rho", "p", "n")}
+        with self.assertRaisesRegex(RelationshipDataError, "INSUFFICIENT_RELATIONSHIP_DATA"):
+            validate_relationship_data(contract, summary_only)
+
+    def test_relationship_pairing_and_numeric_fail_closed(self):
+        contract = self.relationship_contract()
+        with self.assertRaisesRegex(RelationshipDataError, "RELATIONSHIP_PAIRING_LENGTH_MISMATCH"):
+            validate_relationship_data(contract, {"distance": [1, 2], "error": [3]})
+        with self.assertRaisesRegex(RelationshipDataError, "INSUFFICIENT_RELATIONSHIP_DATA"):
+            validate_relationship_data(contract, {"distance": [1, float("nan")], "error": [3, 4]})
+        with self.assertRaisesRegex(RelationshipDataError, "INSUFFICIENT_RELATIONSHIP_DATA"):
+            validate_relationship_data(contract, None)
+
+    def test_explicit_aggregate_representation_is_bounded(self):
+        contract = self.relationship_contract(
+            pairing_requirement="aggregate", relationship_representation="authorized_aggregate",
+            minimum_data_requirement=1,
+        )
+        result = validate_relationship_data(contract, {"distance": -1.5, "error": 0.25})
+        self.assertEqual(result["representation"], "authorized_aggregate")
+        with self.assertRaisesRegex(RelationshipDataError, "INSUFFICIENT_RELATIONSHIP_DATA"):
+            validate_relationship_data(contract, {"distance": [1, 2], "error": [3, 4]})
+
+    def test_legacy_summary_contract_remains_legal(self):
+        legacy = {
+            "contract_type": "figure_contract", "contract_version": "1.0", "purpose": "summary",
+            "claim": {"primary": "metrics"}, "data_bindings": {"metrics": "synthetic"},
+            "roles": {"metrics": "numeric", "model": "category"},
+            "communication_task": "model_comparison", "provenance": {"source_id": "synthetic-summary"},
+        }
+        self.assertIsNone(validate_relationship_data(legacy, {"rho": 0.2, "p": 0.1, "n": 5}))
 
 
 if __name__ == "__main__":
